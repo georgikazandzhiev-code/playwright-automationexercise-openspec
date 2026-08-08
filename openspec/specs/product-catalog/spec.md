@@ -1,6 +1,6 @@
 # Product catalog — capability spec
 
-> **Baseline.** Derived from `docs/requirements.md` §6.3 (REQ-CAT-*), vendor test cases
+> **Baseline.** Derived from `docs/requirements.md` §6.3 (REQ-CAT-\*), vendor test cases
 > TC 8, 18, 19, 22.
 
 ## Purpose
@@ -100,7 +100,7 @@ of which can be added to the cart without opening its detail page.
 
 ## Constraints inherited from the environment
 
-| Constraint | Effect on this capability |
-|---|---|
-| C1 shared environment | No scenario asserts a product count, a fixed product id, or the presence of one named product. Assertions are on *shape* — "at least one card, and each card has a name and a price" — because the catalogue is mutable by the vendor at any time. |
-| C3 ad interstitials | Category and brand sidebar links sit low in the page where vignette interstitials commonly appear; overlay resolution runs after each navigation. |
+| Constraint            | Effect on this capability                                                                                                                                                                                                                          |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1 shared environment | No scenario asserts a product count, a fixed product id, or the presence of one named product. Assertions are on _shape_ — "at least one card, and each card has a name and a price" — because the catalogue is mutable by the vendor at any time. |
+| C3 ad interstitials   | Category and brand sidebar links sit low in the page where vignette interstitials commonly appear; overlay resolution runs after each navigation.                                                                                                  |

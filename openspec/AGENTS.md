@@ -9,12 +9,12 @@ This file states the workflow rules an agent must obey.
 This repo tests a **third-party site we do not own**. There is no product source, no
 backend, no product owner.
 
-| Normal OpenSpec repo | This repo |
-|---|---|
-| Spec describes the software you are about to write | Spec describes **automationexercise.com's** observable behaviour |
-| Implementation = product code | Implementation = the **Playwright tests** that prove the behaviour |
-| A failing test = a bug in your code, fix the code | A failing test = a **defect of the site**, record and report it |
-| Red-then-green: the test fails because the feature does not exist | The feature already exists — see [Proving red](#proving-red) |
+| Normal OpenSpec repo                                              | This repo                                                          |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Spec describes the software you are about to write                | Spec describes **automationexercise.com's** observable behaviour   |
+| Implementation = product code                                     | Implementation = the **Playwright tests** that prove the behaviour |
+| A failing test = a bug in your code, fix the code                 | A failing test = a **defect of the site**, record and report it    |
+| Red-then-green: the test fails because the feature does not exist | The feature already exists — see [Proving red](#proving-red)       |
 
 Consequence: you can never "fix the implementation to satisfy the spec." When a
 requirement and the site disagree, exactly one of two things is true — the site has a
@@ -36,31 +36,31 @@ so `sync` is only needed when you want the specs updated while the change stays 
 
 Artifacts of a change live in `openspec/changes/<change-id>/`:
 
-| Artifact | Produced by | Contains |
-|----------|-------------|----------|
-| `proposal.md` | `/opsx:propose` | Why, what changes, impact |
-| `specs/<capability>/spec.md` | `/opsx:propose` | ADDED / MODIFIED / REMOVED requirements as a **delta** against `openspec/specs/` |
-| `test-plan.md` | `/opsx:testplan` | Requirements-level test cases `TC-NN`, and the coverage matrix |
-| `tasks.md` | tasks step | Test-first tasks, then supporting tasks each tagged `(covers TC-NN)` |
+| Artifact                     | Produced by      | Contains                                                                         |
+| ---------------------------- | ---------------- | -------------------------------------------------------------------------------- |
+| `proposal.md`                | `/opsx:propose`  | Why, what changes, impact                                                        |
+| `specs/<capability>/spec.md` | `/opsx:propose`  | ADDED / MODIFIED / REMOVED requirements as a **delta** against `openspec/specs/` |
+| `test-plan.md`               | `/opsx:testplan` | Requirements-level test cases `TC-NN`, and the coverage matrix                   |
+| `tasks.md`                   | tasks step       | Test-first tasks, then supporting tasks each tagged `(covers TC-NN)`             |
 
 `/opsx:archive` folds an applied change's delta into `openspec/specs/<capability>/spec.md`
 and moves the change under `openspec/changes/archive/`.
 
 ## Capabilities
 
-| Capability | Covers | Baseline ids |
-|------------|--------|--------------|
-| `account-lifecycle` | registration, opt-ins, account deletion | REQ-ACC-* |
-| `authentication` | login, logout, session indicator, anti-enumeration | REQ-AUT-* |
-| `product-catalog` | all products, product detail, categories, brands, recommended | REQ-CAT-* |
-| `product-search` | search results, empty results, result actions | REQ-SRH-* |
-| `shopping-cart` | add, quantity, totals, remove, persistence across login | REQ-CRT-* |
-| `checkout` | address review, order comment, payment, invoice | REQ-CHK-* |
-| `product-reviews` | review form and acknowledgement | REQ-REV-* |
-| `subscription` | footer newsletter block | REQ-SUB-* |
-| `contact-form` | contact page and submission | REQ-CTC-* |
-| `site-navigation` | home identity, static pages, scroll behaviour | REQ-NAV-* |
-| `public-api` | REST API 1–14 | REQ-API-* |
+| Capability          | Covers                                                        | Baseline ids |
+| ------------------- | ------------------------------------------------------------- | ------------ |
+| `account-lifecycle` | registration, opt-ins, account deletion                       | REQ-ACC-\*   |
+| `authentication`    | login, logout, session indicator, anti-enumeration            | REQ-AUT-\*   |
+| `product-catalog`   | all products, product detail, categories, brands, recommended | REQ-CAT-\*   |
+| `product-search`    | search results, empty results, result actions                 | REQ-SRH-\*   |
+| `shopping-cart`     | add, quantity, totals, remove, persistence across login       | REQ-CRT-\*   |
+| `checkout`          | address review, order comment, payment, invoice               | REQ-CHK-\*   |
+| `product-reviews`   | review form and acknowledgement                               | REQ-REV-\*   |
+| `subscription`      | footer newsletter block                                       | REQ-SUB-\*   |
+| `contact-form`      | contact page and submission                                   | REQ-CTC-\*   |
+| `site-navigation`   | home identity, static pages, scroll behaviour                 | REQ-NAV-\*   |
+| `public-api`        | REST API 1–14                                                 | REQ-API-\*   |
 
 A new capability folder requires a baseline section in `docs/requirements.md` in the
 same change.
@@ -129,16 +129,16 @@ test, and it blocks the change.
 
 ## Where things go
 
-| Kind | Location | Naming |
-|------|----------|--------|
-| UI spec | `src/tests/ui/<capability>.<slice>.spec.ts` | kebab-case |
-| API spec | `src/tests/api/<endpoint>.<positive\|negative>.spec.ts` | kebab-case |
-| Page object | `src/ui/pages/<name>.page.ts` | kebab-case file, `PascalCase` class |
-| Fixture wiring | `src/ui/fixtures.ts` | every page object registered here |
-| API service | `src/api/services/<name>-api.service.ts` | |
-| Zod schema | `src/api/schemas/*.schema.ts` | `z.strictObject` for new schemas |
-| Literal string / timeout | `src/utils/constants.ts` | never inline in a spec |
-| Dynamic data | `src/{ui,api}/data-providers/*.data.ts` | unique per run |
+| Kind                     | Location                                                | Naming                              |
+| ------------------------ | ------------------------------------------------------- | ----------------------------------- |
+| UI spec                  | `src/tests/ui/<capability>.<slice>.spec.ts`             | kebab-case                          |
+| API spec                 | `src/tests/api/<endpoint>.<positive\|negative>.spec.ts` | kebab-case                          |
+| Page object              | `src/ui/pages/<name>.page.ts`                           | kebab-case file, `PascalCase` class |
+| Fixture wiring           | `src/ui/fixtures.ts`                                    | every page object registered here   |
+| API service              | `src/api/services/<name>-api.service.ts`                |                                     |
+| Zod schema               | `src/api/schemas/*.schema.ts`                           | `z.strictObject` for new schemas    |
+| Literal string / timeout | `src/utils/constants.ts`                                | never inline in a spec              |
+| Dynamic data             | `src/{ui,api}/data-providers/*.data.ts`                 | unique per run                      |
 
 Never `new SomePage(page)` inside a test — take it from the fixture. Never import `test`
 from `@playwright/test` in a UI spec — import from `src/ui/fixtures`.

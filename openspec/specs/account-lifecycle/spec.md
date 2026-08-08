@@ -1,11 +1,11 @@
 # Account lifecycle — capability spec
 
-> **Baseline.** Derived from `docs/requirements.md` §6.1 (REQ-ACC-*), which in turn is
+> **Baseline.** Derived from `docs/requirements.md` §6.1 (REQ-ACC-\*), which in turn is
 > derived from the vendor test cases TC 1, 5, 14, 15, 23.
 >
 > Owned separately from `authentication` on purpose: this capability governs how an
 > account comes into existence and how it is destroyed. `authentication` governs what a
-> *pre-existing* account can do. Registration is the only place the address is captured,
+> _pre-existing_ account can do. Registration is the only place the address is captured,
 > which is why `checkout` depends on this capability and not on `authentication`.
 
 ## Purpose
@@ -119,8 +119,8 @@ visibly, SHALL terminate the session, and SHALL invalidate the credentials.
 
 ## Constraints inherited from the environment
 
-| Constraint | Effect on this capability |
-|---|---|
-| C1 shared environment | Every registration uses a per-run unique email (REQ-X-03). Never a fixed address. |
-| C2 no reset | Every account created by a test is deleted in teardown via `DELETE /api/deleteAccount`, which runs even when the test failed (REQ-X-02). UI deletion is the *subject* of REQ-ACC-07, not the cleanup mechanism — a failure before that step would otherwise leak an account. |
-| C5 no email verification | Registration completes without confirming the address; no mailbox polling is required. |
+| Constraint               | Effect on this capability                                                                                                                                                                                                                                                    |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1 shared environment    | Every registration uses a per-run unique email (REQ-X-03). Never a fixed address.                                                                                                                                                                                            |
+| C2 no reset              | Every account created by a test is deleted in teardown via `DELETE /api/deleteAccount`, which runs even when the test failed (REQ-X-02). UI deletion is the _subject_ of REQ-ACC-07, not the cleanup mechanism — a failure before that step would otherwise leak an account. |
+| C5 no email verification | Registration completes without confirming the address; no mailbox polling is required.                                                                                                                                                                                       |

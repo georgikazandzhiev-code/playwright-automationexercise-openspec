@@ -139,9 +139,7 @@ export class LoginPage extends BasePage {
     const isValid = await this.emailInput.evaluate<boolean, HTMLInputElement>(
       (element) => element.validity.valid,
     );
-    expect(isValid, 'expected native constraint validation to reject the email field').toBe(
-      false,
-    );
+    expect(isValid, 'expected native constraint validation to reject the email field').toBe(false);
   };
 
   /**

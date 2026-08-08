@@ -20,5 +20,4 @@ export const getDummyPayment = (): PaymentDetails => ({
 /**
  * Comment placed in the "Review Your Order" box before placing the order.
  */
-export const getOrderComment = (): string =>
-  'Automated E2E checkout — please ignore (test order).';
+export const getOrderComment = (): string => 'Automated E2E checkout — please ignore (test order).';

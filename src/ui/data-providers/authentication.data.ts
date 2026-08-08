@@ -19,5 +19,4 @@ export const buildUnknownCredentials = (): UnknownCredentials => ({
  * A syntactically valid address that is never registered — for REQ-AUT-06, where the
  * request must be blocked by the browser before it reaches the site at all.
  */
-export const buildSyntacticallyValidEmail = (): string =>
-  `qa_probe_${Date.now()}@mailinator.com`;
+export const buildSyntacticallyValidEmail = (): string => `qa_probe_${Date.now()}@mailinator.com`;

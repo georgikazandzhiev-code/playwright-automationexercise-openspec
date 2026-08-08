@@ -1,6 +1,6 @@
 # Shopping cart — capability spec
 
-> **Baseline.** Derived from `docs/requirements.md` §6.5 (REQ-CRT-*), vendor test cases
+> **Baseline.** Derived from `docs/requirements.md` §6.5 (REQ-CRT-\*), vendor test cases
 > TC 12, 13, 17, 20, 22.
 
 ## Purpose
@@ -102,11 +102,11 @@ existing account, with the same quantities.
 
 ## Constraints inherited from the environment
 
-| Constraint | Effect on this capability |
-|---|---|
-| C1 shared environment | Prices change without notice. No scenario hardcodes a price; each reads the unit price from the page and asserts the *relationship* to the total. This is what makes REQ-CRT-02 meaningful rather than decorative. |
-| C1 shared environment | The two products in REQ-CRT-03 are selected positionally (first and second listed), never by id. |
-| C2 no reset | REQ-CRT-06 requires an account. It is seeded via `POST /api/createAccount` and deleted in teardown. |
+| Constraint            | Effect on this capability                                                                                                                                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| C1 shared environment | Prices change without notice. No scenario hardcodes a price; each reads the unit price from the page and asserts the _relationship_ to the total. This is what makes REQ-CRT-02 meaningful rather than decorative. |
+| C1 shared environment | The two products in REQ-CRT-03 are selected positionally (first and second listed), never by id.                                                                                                                   |
+| C2 no reset           | REQ-CRT-06 requires an account. It is seeded via `POST /api/createAccount` and deleted in teardown.                                                                                                                |
 
 ## Open question
 

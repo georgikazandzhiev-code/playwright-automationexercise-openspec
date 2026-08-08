@@ -1,8 +1,5 @@
 import { request as apiRequest, type APIRequestContext } from '@playwright/test';
-import {
-  buildSeededAccount,
-  type SeededAccount,
-} from '../../api/data-providers/account-api.data';
+import { buildSeededAccount, type SeededAccount } from '../../api/data-providers/account-api.data';
 import { AccountApiService } from '../../api/services/account-api.service';
 import { getDummyPayment, getOrderComment } from '@data-providers/checkout.data';
 import { DEFAULT_BASE_URL } from '@utils/constants';

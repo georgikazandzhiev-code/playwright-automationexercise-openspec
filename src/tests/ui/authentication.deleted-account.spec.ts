@@ -22,10 +22,7 @@ test.describe('authentication — a deleted account cannot log in', () => {
 
       await test.step('WHEN its former credentials are submitted to the login form', async () => {
         await navigationPage.gotoPath(UI_PATH_LOGIN);
-        await loginPage.loginWithCredentials(
-          disposableAccount.email,
-          disposableAccount.password,
-        );
+        await loginPage.loginWithCredentials(disposableAccount.email, disposableAccount.password);
       });
 
       await test.step('THEN they are refused and no session is created', async () => {

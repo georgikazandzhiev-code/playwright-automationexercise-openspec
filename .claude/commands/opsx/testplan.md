@@ -1,9 +1,9 @@
 ---
-name: "OPSX: Testplan"
+name: 'OPSX: Testplan'
 description: "Generate the change's test plan and test cases — before any product code (Experimental)"
 allowed-tools: Bash(openspec:*), Read, Write, Edit, Grep, Glob
-category: "Workflow"
-tags: ["workflow", "artifacts", "testing", "experimental"]
+category: 'Workflow'
+tags: ['workflow', 'artifacts', 'testing', 'experimental']
 ---
 
 Generate the change's **test plan** — an enumerated, prioritized, traceable list
@@ -53,7 +53,6 @@ prompt for available changes.
    do NOT copy them into the file. Use `template` as the output structure.
 
 4. **Gate checks — stop early if unmet**
-
    - `proposal.md` and at least one spec delta must exist. If missing, tell the
      user to run `/opsx:propose` first and stop.
    - No unresolved open question that would make a requirement ambiguous.
@@ -68,7 +67,6 @@ prompt for available changes.
    `openspec/AGENTS.md`.
 
 6. **Derive the test cases**
-
    1. **Requirements under test** — one row per requirement in the deltas, using
       its heading as the id (e.g. `REQ-reset-request`).
    2. **Test cases** — go beyond the happy-path scenarios already in the delta:
@@ -93,7 +91,6 @@ prompt for available changes.
       behind a green check is not.
 
 7. **Self-check before writing**
-
    - Every requirement and every delta `Scenario:` appears in the coverage
      matrix with ≥1 `TC`.
    - Every `TC` has an id, category, priority, and ≥1 covered requirement.
@@ -124,15 +121,18 @@ prompt for available changes.
 **Coverage:** N requirements, M scenarios — all covered
 
 ### Needed extra cases beyond the delta scenarios
+
 - REQ-<name>: TC-NN (<why>)
 
 ### Deferred / partially asserted
+
 - <area>: <what is not covered and why>
 
 Review and set Status to `Approved`, then run `/opsx:apply`.
 ```
 
 **Guardrails**
+
 - Requirements-level only — never write test code or product code here
 - Never leave a requirement or a delta `Scenario:` uncovered; add cases instead
 - Never mark a partially-asserted case as fully covered — record the limit

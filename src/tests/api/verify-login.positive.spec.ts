@@ -15,10 +15,9 @@ test.describe('public-api — verifyLogin (API 7)', () => {
     'TC-01 an account created through the API verifies as existing',
     { tag: '@api' },
     async ({ accountApi, seededAccount }) => {
-      const body = await test.step(
-        'WHEN verifyLogin is called with the seeded credentials',
-        async () => accountApi.readVerifyLogin(seededAccount.email, seededAccount.password),
-      );
+      const body =
+        await test.step('WHEN verifyLogin is called with the seeded credentials', async () =>
+          accountApi.readVerifyLogin(seededAccount.email, seededAccount.password));
 
       await test.step('THEN the site confirms the account exists', async () => {
         // The site answers HTTP 200 for every outcome; the contract is in the body (C4).

@@ -56,23 +56,19 @@ test.describe('authentication — refusal of invalid credentials', () => {
     async ({ navigationPage, loginPage, seededAccount }) => {
       const unknown = buildUnknownCredentials();
 
-      const unknownEmailMessage = await test.step(
-        'WHEN an unregistered email is refused, capture what the site rendered',
-        async () => {
+      const unknownEmailMessage =
+        await test.step('WHEN an unregistered email is refused, capture what the site rendered', async () => {
           await navigationPage.gotoPath(UI_PATH_LOGIN);
           await loginPage.loginWithCredentials(unknown.email, unknown.password);
           return loginPage.readLoginErrorText();
-        },
-      );
+        });
 
-      const wrongPasswordMessage = await test.step(
-        'WHEN a real account with a wrong password is refused, capture that too',
-        async () => {
+      const wrongPasswordMessage =
+        await test.step('WHEN a real account with a wrong password is refused, capture that too', async () => {
           await navigationPage.gotoPath(UI_PATH_LOGIN);
           await loginPage.loginWithCredentials(seededAccount.email, WRONG_PASSWORD_PLACEHOLDER);
           return loginPage.readLoginErrorText();
-        },
-      );
+        });
 
       await test.step('THEN the two messages are identical', async () => {
         // Compared against EACH OTHER, not each against a constant: two messages

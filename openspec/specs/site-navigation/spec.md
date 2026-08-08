@@ -1,6 +1,6 @@
 # Site navigation — capability spec
 
-> **Baseline.** Derived from `docs/requirements.md` §6.10 (REQ-NAV-*), vendor test cases
+> **Baseline.** Derived from `docs/requirements.md` §6.10 (REQ-NAV-\*), vendor test cases
 > TC 7, 25, 26.
 
 ## Purpose
@@ -58,7 +58,7 @@ so the control is a convenience and not the only route.
 
 ## Constraints inherited from the environment
 
-| Constraint | Effect on this capability |
-|---|---|
+| Constraint          | Effect on this capability                                                                                                                                                                                                                      |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | C3 ad interstitials | REQ-NAV-03 and REQ-NAV-04 both scroll to the footer, which is exactly where vignette interstitials appear on this site. Overlay resolution must run before the scroll assertion, or the "text is visible" check measures the ad, not the page. |
-| — | Viewport visibility, not scroll offset, is the assertion. A pixel-offset assertion would encode the current page height and break on any content change. |
+| —                   | Viewport visibility, not scroll offset, is the assertion. A pixel-offset assertion would encode the current page height and break on any content change.                                                                                       |

@@ -1,9 +1,9 @@
 # Product search — capability spec
 
-> **Baseline.** Derived from `docs/requirements.md` §6.4 (REQ-SRH-*), vendor test cases
+> **Baseline.** Derived from `docs/requirements.md` §6.4 (REQ-SRH-\*), vendor test cases
 > TC 9, 20.
 >
-> Scope boundary: the *UI* search box. The `POST /api/searchProduct` contract belongs to
+> Scope boundary: the _UI_ search box. The `POST /api/searchProduct` contract belongs to
 > `public-api` (REQ-API-05, REQ-API-06). They are separate capabilities because the site
 > is free to change one without the other, and has: the API returns a JSON error code the
 > UI never surfaces.
@@ -59,7 +59,7 @@ Products page, so a shopper can act on a search without navigating away.
 
 ## Constraints inherited from the environment
 
-| Constraint | Effect on this capability |
-|---|---|
+| Constraint            | Effect on this capability                                                                                                                                                                                                                                                          |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | C1 shared environment | The search term for REQ-SRH-01 must be a broad one whose disappearance from the catalogue would itself be notable (e.g. a garment word), never a specific product name. The no-match term is a deliberately impossible string so that no future product can accidentally match it. |
-| — | REQ-SRH-01's per-result assertion is what distinguishes a real search from a broken one that returns the full catalogue. Asserting only "at least one result" would pass against that bug. |
+| —                     | REQ-SRH-01's per-result assertion is what distinguishes a real search from a broken one that returns the full catalogue. Asserting only "at least one result" would pass against that bug.                                                                                         |

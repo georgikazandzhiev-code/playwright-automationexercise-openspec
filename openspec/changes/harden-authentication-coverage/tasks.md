@@ -31,7 +31,7 @@ enabling scaffolding. Tests are written before the supporting code they need.
 - [x] 2.2 **Enabling scaffolding** — account data provider producing a unique name/email/password/address payload per run (constraint C1, REQ-X-03)
 - [x] 2.3 Register the fixture in `src/ui/fixtures.ts` and, where the API context is needed, in `src/api/fixtures.ts` — **enabling scaffolding**, no direct coverage
 - [x] 2.4 `LoginPage`: locators and actions for the returning-user form, the new-user section, the error message and the exact session-indicator text (covers TC-02, TC-03, TC-04, TC-05, TC-06, TC-07)
-- [x] 2.5 `LoginPage`: native-validity read on the email field (covers TC-11, TC-12). **Deviation from the original task text, recorded rather than glossed:** this was written as "without `page.evaluate`". `ValidityState` has no Playwright locator API, so `locator.evaluate` is the only route to it. It is confined to the page object and paired at the call site with the user-observable consequences — no navigation, no session — which *are* asserted through locators
+- [x] 2.5 `LoginPage`: native-validity read on the email field (covers TC-11, TC-12). **Deviation from the original task text, recorded rather than glossed:** this was written as "without `page.evaluate`". `ValidityState` has no Playwright locator API, so `locator.evaluate` is the only route to it. It is confined to the page object and paired at the call site with the user-observable consequences — no navigation, no session — which _are_ asserted through locators
 - [x] 2.6 `NavigationPage`: assertion that the session indicator holds on an arbitrary page, plus a reload action (covers TC-09, TC-10)
 - [x] 2.7 `AccountApiService`: `verifyLogin` method returning the parsed body (covers TC-01)
 - [x] 2.8 Zod schema for the `verifyLogin` response as a `z.strictObject` (covers TC-01)
@@ -41,11 +41,11 @@ enabling scaffolding. Tests are written before the supporting code they need.
 
 > The site already exists, so a new assertion can pass on its first run. A green run from
 > an assertion never observed failing is not evidence. See `openspec/AGENTS.md` §
-> *Proving red*.
+> _Proving red_.
 
 - [x] 3.1 TC-04: point the expected name at a value the account was not registered with; confirm the failure message names the mismatch; restore (covers TC-04)
 - [x] 3.2 TC-07: compare the captured message against a deliberately different string; confirm red; restore (covers TC-07)
-- [x] 3.3 TC-05, TC-06: assert the *absence* of the error message; confirm red; restore (covers TC-05, TC-06)
+- [x] 3.3 TC-05, TC-06: assert the _absence_ of the error message; confirm red; restore (covers TC-05, TC-06)
 - [x] 3.4 TC-09, TC-10: assert the logged-out header after login; confirm red; restore (covers TC-09, TC-10)
 - [x] 3.5 TC-11, TC-12: submit a valid credential pair and assert the field is invalid; confirm red; restore (covers TC-11, TC-12)
 - [x] 3.6 TC-01, TC-13: swap the expected `responseCode` / error expectation; confirm red; restore (covers TC-01, TC-13)

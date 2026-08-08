@@ -1,6 +1,6 @@
 # Contact form — capability spec
 
-> **Baseline.** Derived from `docs/requirements.md` §6.9 (REQ-CTC-*), vendor test case
+> **Baseline.** Derived from `docs/requirements.md` §6.9 (REQ-CTC-\*), vendor test case
 > TC 6.
 
 ## Purpose
@@ -48,10 +48,10 @@ The contact success state SHALL offer a route back to the home page.
 
 ## Constraints inherited from the environment
 
-| Constraint | Effect on this capability |
-|---|---|
-| C1 shared environment | Message contents are not readable back. The success message is the only observable. |
-| — | The attachment is a small fixture file committed to the repo, not a file generated at runtime and not a file from the developer's machine — so the test is reproducible in CI. |
+| Constraint            | Effect on this capability                                                                                                                                                      |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| C1 shared environment | Message contents are not readable back. The success message is the only observable.                                                                                            |
+| —                     | The attachment is a small fixture file committed to the repo, not a file generated at runtime and not a file from the developer's machine — so the test is reproducible in CI. |
 
 ## Note on the dialog
 

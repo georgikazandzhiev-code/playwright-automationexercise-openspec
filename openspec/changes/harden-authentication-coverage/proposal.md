@@ -19,7 +19,7 @@ tests, correctly seeded. What is wrong with it is not the seeding — it is what
    session, as any user, satisfies it. If the site logged you in as somebody else, the test
    stays green. This is precisely the weakness the REQ-AUT-02 tightening below targets.
 2. **The negative test conflates two distinct requirements.** It submits an unknown email
-   *and* a wrong password in one action, so it cannot distinguish REQ-AUT-03's two
+   _and_ a wrong password in one action, so it cannot distinguish REQ-AUT-03's two
    scenarios, and it proves nothing at all about non-disclosure between them.
 3. **Four of six requirements have no test.** REQ-AUT-01, REQ-AUT-05 and REQ-AUT-06 are
    untested; REQ-AUT-04 is asserted only as "the `Signup / Login` link is back".
@@ -45,7 +45,7 @@ spec, which is what a spec review is for:
 
 - **ADD** `REQ-AUT-05` — the session survives navigation across the site.
 - **ADD** `REQ-AUT-06` — the login form refuses empty credentials before submitting.
-- **MODIFY** `REQ-AUT-02` — bind the header indicator to the *registered* name rather than
+- **MODIFY** `REQ-AUT-02` — bind the header indicator to the _registered_ name rather than
   an unspecified `<name>`. `Logged in as <somebody>` currently satisfies the requirement as
   written; it should not.
 - Implement the full `authentication` capability (REQ-AUT-01 … REQ-AUT-06) as Playwright
@@ -64,7 +64,7 @@ Not breaking: no existing requirement is weakened or removed.
 
 ### New Capabilities
 
-*(none — `authentication` already exists in `openspec/specs/`)*
+_(none — `authentication` already exists in `openspec/specs/`)_
 
 ### Modified Capabilities
 
@@ -73,20 +73,20 @@ Not breaking: no existing requirement is weakened or removed.
 
 ## Impact
 
-| Area | Effect |
-|------|--------|
-| `openspec/specs/authentication/spec.md` | Two requirements added, one tightened, on archive |
-| `src/tests/ui/` | New `authentication.*.spec.ts` files; `task3-login-logout.spec.ts` deleted |
-| `src/api/services/account-api.service.ts` | Reused for seeding; extended only if a gap appears |
-| `src/ui/pages/login.page.ts` | New locators/actions for the empty-submit and name-binding assertions |
-| `src/utils/constants.ts` | Any new site copy lands here, not inline |
-| `.env` | `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` become unused by this capability |
-| Runtime | Each test costs one account create + one delete against the live site |
+| Area                                      | Effect                                                                     |
+| ----------------------------------------- | -------------------------------------------------------------------------- |
+| `openspec/specs/authentication/spec.md`   | Two requirements added, one tightened, on archive                          |
+| `src/tests/ui/`                           | New `authentication.*.spec.ts` files; `task3-login-logout.spec.ts` deleted |
+| `src/api/services/account-api.service.ts` | Reused for seeding; extended only if a gap appears                         |
+| `src/ui/pages/login.page.ts`              | New locators/actions for the empty-submit and name-binding assertions      |
+| `src/utils/constants.ts`                  | Any new site copy lands here, not inline                                   |
+| `.env`                                    | `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` become unused by this capability  |
+| Runtime                                   | Each test costs one account create + one delete against the live site      |
 
 ## Risks
 
-| Risk | Mitigation |
-|------|-----------|
-| The site is third-party and can change copy at any time | Expected strings live in `src/utils/constants.ts`; a copy change is a one-line diff, and a failure is reported as a site change rather than patched away |
-| Ad interstitials intercept the header `Logout` control (defect D2) | Overlay resolution runs centrally after navigation; if `Logout` proves unclickable, that is recorded as a defect, not routed around inside the test |
-| Seeding via API then asserting in the UI couples two capabilities | Accepted deliberately: the alternative is a shared `.env` account, which is the problem this change exists to remove. `public-api` REQ-API-11 already asserts the seeding endpoint's own contract |
+| Risk                                                               | Mitigation                                                                                                                                                                                        |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The site is third-party and can change copy at any time            | Expected strings live in `src/utils/constants.ts`; a copy change is a one-line diff, and a failure is reported as a site change rather than patched away                                          |
+| Ad interstitials intercept the header `Logout` control (defect D2) | Overlay resolution runs centrally after navigation; if `Logout` proves unclickable, that is recorded as a defect, not routed around inside the test                                               |
+| Seeding via API then asserting in the UI couples two capabilities  | Accepted deliberately: the alternative is a shared `.env` account, which is the problem this change exists to remove. `public-api` REQ-API-11 already asserts the seeding endpoint's own contract |

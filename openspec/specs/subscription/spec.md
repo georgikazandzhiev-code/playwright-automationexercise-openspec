@@ -1,6 +1,6 @@
 # Newsletter subscription — capability spec
 
-> **Baseline.** Derived from `docs/requirements.md` §6.8 (REQ-SUB-*), vendor test cases
+> **Baseline.** Derived from `docs/requirements.md` §6.8 (REQ-SUB-\*), vendor test cases
 > TC 10, 11.
 
 ## Purpose
@@ -54,10 +54,10 @@ submission of a value that is not a valid email address.
 
 ## Constraints inherited from the environment
 
-| Constraint | Effect on this capability |
-|---|---|
-| C1 shared environment | The subscriber list is not readable and not clearable. As with reviews, the confirmation message is the only observable. A per-run unique address is used so the residue is identifiable. |
-| C5 no email verification | No mail is sent that we can verify, so REQ-SUB-02 claims acceptance, not delivery. |
+| Constraint               | Effect on this capability                                                                                                                                                                 |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1 shared environment    | The subscriber list is not readable and not clearable. As with reviews, the confirmation message is the only observable. A per-run unique address is used so the residue is identifiable. |
+| C5 no email verification | No mail is sent that we can verify, so REQ-SUB-02 claims acceptance, not delivery.                                                                                                        |
 
 ## Not claimed
 

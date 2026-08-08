@@ -1,9 +1,9 @@
 ---
-name: "OPSX: Verify"
-description: "Coverage gate — verify the applied change covers its test plan (Experimental)"
+name: 'OPSX: Verify'
+description: 'Coverage gate — verify the applied change covers its test plan (Experimental)'
 allowed-tools: Bash(openspec:*), Bash(npm:*), Read, Grep, Glob
-category: "Workflow"
-tags: ["workflow", "testing", "quality", "experimental"]
+category: 'Workflow'
+tags: ['workflow', 'testing', 'quality', 'experimental']
 ---
 
 Verify an applied change against its test plan — the **coverage gate**. Runs
@@ -39,7 +39,6 @@ prompt for available changes.
    `artifactPaths.specs.existingOutputPaths`, never from inference.
 
 3. **Read the four sources, from disk**
-
    - every spec delta (requirements + their `Scenario:` blocks)
    - `test-plan.md` (its status, its cases, its coverage matrix)
    - `tasks.md` (test tasks, implementation tasks, their `TC-NN` references)
@@ -72,10 +71,12 @@ prompt for available changes.
    name in the repo. A case that exists on paper but in no test → **blocking**.
 
    **G. Suite and lint** — run and report the real output:
+
    ```bash
    npm test
    npm run lint
    ```
+
    Any failure → **blocking**. Report the actual output; never summarize a
    failing run as passing.
 
@@ -97,17 +98,18 @@ prompt for available changes.
 ```markdown
 ## Verify: <change-name> — PASS
 
-| Check | Result |
-|-------|--------|
-| A. Test plan approved | ✅ |
-| B. Requirement coverage | ✅ N/N requirements |
-| C. Scenario coverage | ✅ M/M scenarios |
-| D. Every TC has a task | ✅ K/K cases |
-| E. Every impl task traces to a TC | ✅ (X scaffolding tasks exempt, labelled) |
-| F. Every TC realized in a test name | ✅ K/K found in tests/ |
-| G. Suite + lint | ✅ <actual counts> |
+| Check                               | Result                                    |
+| ----------------------------------- | ----------------------------------------- |
+| A. Test plan approved               | ✅                                        |
+| B. Requirement coverage             | ✅ N/N requirements                       |
+| C. Scenario coverage                | ✅ M/M scenarios                          |
+| D. Every TC has a task              | ✅ K/K cases                              |
+| E. Every impl task traces to a TC   | ✅ (X scaffolding tasks exempt, labelled) |
+| F. Every TC realized in a test name | ✅ K/K found in tests/                    |
+| G. Suite + lint                     | ✅ <actual counts>                        |
 
 ### Documented limits (not gaps)
+
 - <what the plan records as deferred or partially asserted, and where>
 
 Ready for `/opsx:sync` or `/opsx:archive`.
@@ -119,16 +121,19 @@ Ready for `/opsx:sync` or `/opsx:archive`.
 ## Verify: <change-name> — BLOCKED
 
 ### Blocking findings
+
 1. **<check>** — <what is missing, with file path>
    → <the specific thing that must exist>
 
 ### Passing checks
+
 - <list>
 
 Not ready to sync or archive. Close the findings above, then re-run `/opsx:verify`.
 ```
 
 **Guardrails**
+
 - Report, don't fix — never edit specs, tasks, tests, or product code from here
 - Recompute coverage from the deltas and tasks; the plan's own matrix is a claim, not proof
 - Run the suite and the linter; report their real output including failures

@@ -1,6 +1,6 @@
 # Product reviews — capability spec
 
-> **Baseline.** Derived from `docs/requirements.md` §6.7 (REQ-REV-*), vendor test case
+> **Baseline.** Derived from `docs/requirements.md` §6.7 (REQ-REV-\*), vendor test case
 > TC 21.
 
 ## Purpose
@@ -46,10 +46,10 @@ NOT reject the submission for lack of a session.
 
 ## Constraints inherited from the environment
 
-| Constraint | Effect on this capability |
-|---|---|
+| Constraint            | Effect on this capability                                                                                                                                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | C1 shared environment | The review list is global and mutated by the whole internet. **No scenario asserts that the submitted review appears, where it appears, or how many reviews exist.** The acknowledgement message is the only observable this capability may assert on. |
-| C1 shared environment | Reviews cannot be deleted through any public interface, so this capability leaves a residue on the site. That is an accepted, documented cost of testing it — the review name and text are generated per run and identifiable as test data. |
+| C1 shared environment | Reviews cannot be deleted through any public interface, so this capability leaves a residue on the site. That is an accepted, documented cost of testing it — the review name and text are generated per run and identifiable as test data.            |
 
 ## Not claimed
 

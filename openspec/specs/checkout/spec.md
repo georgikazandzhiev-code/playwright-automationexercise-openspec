@@ -1,6 +1,6 @@
 # Checkout — capability spec
 
-> **Baseline.** Derived from `docs/requirements.md` §6.6 (REQ-CHK-*), vendor test cases
+> **Baseline.** Derived from `docs/requirements.md` §6.6 (REQ-CHK-\*), vendor test cases
 > TC 14, 15, 16, 23, 24.
 >
 > Depends on `account-lifecycle` (the address shown at checkout is the one captured at
@@ -116,11 +116,11 @@ SHALL be able to complete the same order.
 
 ## Constraints inherited from the environment
 
-| Constraint | Effect on this capability |
-|---|---|
-| C2 no reset | Every checkout scenario registers its own account and deletes it in teardown via the API. Orders themselves cannot be cleaned up — they are an accepted residue of testing this site, noted so it is a known cost rather than a surprise. |
-| C6 payment is not real | The site accepts any 16-digit number and any future expiry; there is no gateway. No payment-validation requirement is claimed beyond REQ-CHK-05, because the site enforces none. Card data is synthetic and generated per run. |
-| C1 shared environment | REQ-CHK-03 is the reason the registration address is generated per run and captured in the test's own data: comparing checkout against a *recorded* registration payload is the only way to prove the site round-tripped it, rather than that both happen to show the same constant. |
+| Constraint             | Effect on this capability                                                                                                                                                                                                                                                            |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| C2 no reset            | Every checkout scenario registers its own account and deletes it in teardown via the API. Orders themselves cannot be cleaned up — they are an accepted residue of testing this site, noted so it is a known cost rather than a surprise.                                            |
+| C6 payment is not real | The site accepts any 16-digit number and any future expiry; there is no gateway. No payment-validation requirement is claimed beyond REQ-CHK-05, because the site enforces none. Card data is synthetic and generated per run.                                                       |
+| C1 shared environment  | REQ-CHK-03 is the reason the registration address is generated per run and captured in the test's own data: comparing checkout against a _recorded_ registration payload is the only way to prove the site round-tripped it, rather than that both happen to show the same constant. |
 
 ## Deferred
 

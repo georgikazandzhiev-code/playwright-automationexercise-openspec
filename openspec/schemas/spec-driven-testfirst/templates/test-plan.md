@@ -17,36 +17,36 @@
 
 > Ids are the requirement headings from the change's spec deltas.
 
-| Requirement | Summary | Source delta |
-|-------------|---------|--------------|
-| REQ-[name] | [requirement text] | specs/[domain]/spec.md |
-| … | … | … |
+| Requirement | Summary            | Source delta           |
+| ----------- | ------------------ | ---------------------- |
+| REQ-[name]  | [requirement text] | specs/[domain]/spec.md |
+| …           | …                  | …                      |
 
 ## 3. Test cases
 
 > ID `TC-NN`. Category `[Unit] / [Contract] / [Integration] / [E2E]`. Priority `P1` (critical path / security / data-loss), `P2` (core regression), `P3` (edge). Every delta `Scenario:` maps to ≥1 case.
 
-| ID | Title | Category | Priority | Covers | Given / When / Then (intent) | Expected result |
-|----|-------|----------|----------|--------|------------------------------|-----------------|
-| TC-01 | [happy path] | [Contract] | P1 | REQ-[name] | GIVEN … WHEN … THEN … | [observable outcome] |
-| TC-02 | [negative / validation] | [Contract] | P2 | REQ-[name] | GIVEN … WHEN invalid … THEN … | [error shape / status] |
-| … | … | … | … | … | … | … |
+| ID    | Title                   | Category   | Priority | Covers     | Given / When / Then (intent)  | Expected result        |
+| ----- | ----------------------- | ---------- | -------- | ---------- | ----------------------------- | ---------------------- |
+| TC-01 | [happy path]            | [Contract] | P1       | REQ-[name] | GIVEN … WHEN … THEN …         | [observable outcome]   |
+| TC-02 | [negative / validation] | [Contract] | P2       | REQ-[name] | GIVEN … WHEN invalid … THEN … | [error shape / status] |
+| …     | …                       | …          | …        | …          | …                             | …                      |
 
 ## 4. Non-functional candidates
 
-| Area | Applies? | Case(s) / notes |
-|------|----------|-----------------|
-| Security | [Yes/No] | [TC-IDs or "None identified"] |
+| Area               | Applies? | Case(s) / notes                                     |
+| ------------------ | -------- | --------------------------------------------------- |
+| Security           | [Yes/No] | [TC-IDs or "None identified"]                       |
 | Performance / load | [Yes/No] | [candidate + rough threshold, or "None identified"] |
-| Accessibility | [Yes/No] | [notes or "N/A"] |
+| Accessibility      | [Yes/No] | [notes or "N/A"]                                    |
 
 ## 5. Coverage matrix (requirement → test cases)
 
 > Hard rule: **no empty right-hand cell.** A requirement with no test case means § 3 is incomplete.
 
-| Requirement | Covered by | Planned task(s) |
-|-------------|-----------|-----------------|
-| REQ-[name] | TC-01, TC-02 | *(filled by the tasks step)* |
+| Requirement | Covered by   | Planned task(s)              |
+| ----------- | ------------ | ---------------------------- |
+| REQ-[name]  | TC-01, TC-02 | _(filled by the tasks step)_ |
 
 ## 6. Assumptions & open questions
 

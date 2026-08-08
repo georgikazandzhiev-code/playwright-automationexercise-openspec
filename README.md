@@ -43,7 +43,7 @@ amended through a change. Softening the assertion is neither, and is forbidden.
 **"Red then green" does not work, so we prove red instead.** The feature already exists; a
 new test can pass on its first run, and a green run from an assertion never observed
 failing is not evidence. Every new assertion is deliberately inverted, run, observed red,
-and restored — see `openspec/AGENTS.md` § *Proving red* and group 3 of any change's
+and restored — see `openspec/AGENTS.md` § _Proving red_ and group 3 of any change's
 `tasks.md`.
 
 **The environment is shared with the entire internet and never resets.** Every test seeds
@@ -72,19 +72,19 @@ Eleven capability specs cover all 26 vendor test cases and all 14 published APIs
 coverage is being built one change at a time — the gap between the two columns is visible
 on purpose.
 
-| Capability | Requirements | Automated |
-|------------|--------------|-----------|
-| `authentication` | REQ-AUT-01 … 06 | **✅ complete** — 13 cases, `harden-authentication-coverage` |
-| `account-lifecycle` | REQ-ACC-01 … 07 | partial — inherited registration specs |
-| `product-search` | REQ-SRH-01 … 03 | partial — inherited search specs |
-| `shopping-cart` | REQ-CRT-01 … 06 | partial — inherited cart specs |
-| `checkout` | REQ-CHK-01 … 07 | partial — inherited checkout spec |
-| `public-api` | REQ-API-01 … 14 | partial — APIs 1, 5, 6, 7, 11, 12 |
-| `product-catalog` | REQ-CAT-01 … 05 | — |
-| `product-reviews` | REQ-REV-01 … 03 | — |
-| `subscription` | REQ-SUB-01 … 03 | — |
-| `contact-form` | REQ-CTC-01 … 03 | — |
-| `site-navigation` | REQ-NAV-01 … 04 | — |
+| Capability          | Requirements    | Automated                                                    |
+| ------------------- | --------------- | ------------------------------------------------------------ |
+| `authentication`    | REQ-AUT-01 … 06 | **✅ complete** — 13 cases, `harden-authentication-coverage` |
+| `account-lifecycle` | REQ-ACC-01 … 07 | partial — inherited registration specs                       |
+| `product-search`    | REQ-SRH-01 … 03 | partial — inherited search specs                             |
+| `shopping-cart`     | REQ-CRT-01 … 06 | partial — inherited cart specs                               |
+| `checkout`          | REQ-CHK-01 … 07 | partial — inherited checkout spec                            |
+| `public-api`        | REQ-API-01 … 14 | partial — APIs 1, 5, 6, 7, 11, 12                            |
+| `product-catalog`   | REQ-CAT-01 … 05 | —                                                            |
+| `product-reviews`   | REQ-REV-01 … 03 | —                                                            |
+| `subscription`      | REQ-SUB-01 … 03 | —                                                            |
+| `contact-form`      | REQ-CTC-01 … 03 | —                                                            |
+| `site-navigation`   | REQ-NAV-01 … 04 | —                                                            |
 
 ## The workflow
 
@@ -127,13 +127,13 @@ src/
 
 ## Environment
 
-| Variable | Required | Notes |
-|----------|----------|-------|
-| `BASE_URL` | no | Defaults to `https://www.automationexercise.com` |
+| Variable   | Required | Notes                                            |
+| ---------- | -------- | ------------------------------------------------ |
+| `BASE_URL` | no       | Defaults to `https://www.automationexercise.com` |
 
 There is deliberately **no test-user credential**. Specs under the spec workflow seed their
 own accounts through the REST API. If you find a `TEST_USER_*` reference anywhere, it is a
-leftover — see `openspec/project.md` § *Known state of the inherited suite*.
+leftover — see `openspec/project.md` § _Known state of the inherited suite_.
 
 ## Conventions
 
@@ -152,6 +152,6 @@ Full list in `openspec/project.md`. The ones that get code rejected:
 ## Known site defects
 
 Recorded in `docs/requirements.md` §10 so that a test asserting the documented contract may
-fail *by design* rather than being weakened to match the bug. Currently: the
+fail _by design_ rather than being weakened to match the bug. Currently: the
 `searchProduct` error code divergence (D1), ad interstitials intercepting header clicks
 (D2), and `createAccount` returning HTTP 200 with body 201 (D3).

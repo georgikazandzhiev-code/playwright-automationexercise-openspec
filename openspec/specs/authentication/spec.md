@@ -1,6 +1,6 @@
 # Authentication — capability spec
 
-> **Baseline.** Derived from `docs/requirements.md` §6.2 (REQ-AUT-*), vendor test cases
+> **Baseline.** Derived from `docs/requirements.md` §6.2 (REQ-AUT-\*), vendor test cases
 > TC 2, 3, 4.
 >
 > Scope boundary: this capability covers what a **pre-existing** account can do. Creating
@@ -88,8 +88,8 @@ relax.
 
 ## Constraints inherited from the environment
 
-| Constraint | Effect on this capability |
-|---|---|
+| Constraint            | Effect on this capability                                                                                                                                             |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | C1 shared environment | A test that needs "an account that exists" seeds it via `POST /api/createAccount`; it does not reuse a shared credential from `.env`, which any other run may delete. |
-| C2 no reset | The seeded account is deleted in teardown. |
-| C3 ad interstitials | Header `Signup / Login` clicks are intercepted intermittently; direct navigation to `/login` is the sanctioned workaround (site defect D2). |
+| C2 no reset           | The seeded account is deleted in teardown.                                                                                                                            |
+| C3 ad interstitials   | Header `Signup / Login` clicks are intercepted intermittently; direct navigation to `/login` is the sanctioned workaround (site defect D2).                           |

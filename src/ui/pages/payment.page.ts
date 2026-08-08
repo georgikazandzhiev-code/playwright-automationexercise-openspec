@@ -13,7 +13,9 @@ export class PaymentPage extends BasePage {
 
   // ── Locators (top) ── (testIdAttribute = data-qa; name-attribute fallback for robustness)
   get nameOnCardInput(): Locator {
-    return this.page.getByTestId('name-on-card').or(this.page.locator('input[name="name_on_card"]'));
+    return this.page
+      .getByTestId('name-on-card')
+      .or(this.page.locator('input[name="name_on_card"]'));
   }
 
   get cardNumberInput(): Locator {
@@ -25,7 +27,9 @@ export class PaymentPage extends BasePage {
   }
 
   get expiryMonthInput(): Locator {
-    return this.page.getByTestId('expiry-month').or(this.page.locator('input[name="expiry_month"]'));
+    return this.page
+      .getByTestId('expiry-month')
+      .or(this.page.locator('input[name="expiry_month"]'));
   }
 
   get expiryYearInput(): Locator {

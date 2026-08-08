@@ -1,6 +1,6 @@
 # Public REST API — capability spec
 
-> **Baseline.** Derived from `docs/requirements.md` §6.11 (REQ-API-*), the vendor's
+> **Baseline.** Derived from `docs/requirements.md` §6.11 (REQ-API-\*), the vendor's
 > published [API list](https://automationexercise.com/api_list) (API 1–14).
 >
 > This capability is load-bearing beyond its own tests: API 11 and API 12 are the seeding
@@ -17,7 +17,7 @@ status in the response body rather than the HTTP status line.
 ## The `responseCode` convention
 
 Most `/api/*` endpoints answer **HTTP 200** and place the real status in a `responseCode`
-field inside the JSON body. The HTTP status line is therefore *not* the contract.
+field inside the JSON body. The HTTP status line is therefore _not_ the contract.
 
 Every requirement below states the **body** `responseCode`. A test that asserts
 `expect(response.status()).toBe(400)` against this API is asserting the wrong thing and
@@ -203,12 +203,12 @@ detail.
 
 ## Constraints inherited from the environment
 
-| Constraint | Effect on this capability |
-|---|---|
-| C4 status is in the body | Every assertion is on `responseCode`, never on the HTTP status. |
-| C1 shared environment | Every account-touching scenario creates its own account with a per-run unique email. REQ-API-07, 12, 13 and 14 all seed via REQ-API-11 rather than sharing one fixture account, so they can run concurrently. |
-| C2 no reset | Every created account is deleted in teardown, including on failure. |
-| — | Schemas are `z.strictObject`: an unexpected field is a contract change and must fail. Loosening a schema to absorb a new field is forbidden — the field gets added to the schema deliberately, in a change. |
+| Constraint               | Effect on this capability                                                                                                                                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C4 status is in the body | Every assertion is on `responseCode`, never on the HTTP status.                                                                                                                                               |
+| C1 shared environment    | Every account-touching scenario creates its own account with a per-run unique email. REQ-API-07, 12, 13 and 14 all seed via REQ-API-11 rather than sharing one fixture account, so they can run concurrently. |
+| C2 no reset              | Every created account is deleted in teardown, including on failure.                                                                                                                                           |
+| —                        | Schemas are `z.strictObject`: an unexpected field is a contract change and must fail. Loosening a schema to absorb a new field is forbidden — the field gets added to the schema deliberately, in a change.   |
 
 ## Known divergence from the vendor documentation
 
@@ -218,5 +218,5 @@ in `docs/requirements.md` §10.
 
 It is split into its own scenario deliberately, so that the message assertion (which
 holds) and the code assertion (which may not) report separately. The code assertion is
-kept asserting the *documented* contract. It is not relaxed to match the bug — a green
+kept asserting the _documented_ contract. It is not relaxed to match the bug — a green
 suite that has quietly adopted the defect is worse than a red one that names it.
