@@ -1,0 +1,469 @@
+name: spec-driven-testfirst
+version: 1
+description: >
+  Test-first OpenSpec workflow - proposal → specs → design → test-plan → tasks.
+  Forked from spec-driven to make the change's test cases an artifact produced
+  and approved BEFORE any product code is applied (AES-55).
+artifacts:
+  - id: proposal
+    generates: proposal.md
+    description: Initial proposal document outlining the change
+    template: proposal.md
+    instruction: >
+      Create the proposal document that establishes WHY this change is needed.
+
+
+      Sections:
+
+      - **Why**: 1-2 sentences on the problem or opportunity. What problem does
+      this solve? Why now?
+
+      - **What Changes**: Bullet list of changes. Be specific about new
+      capabilities, modifications, or removals. Mark breaking changes with
+      **BREAKING**.
+
+      - **Capabilities**: Identify which specs will be created or modified:
+        - **New Capabilities**: List capabilities being introduced. Each becomes a new `specs/<name>/spec.md`. Use kebab-case names (e.g., `user-auth`, `data-export`).
+        - **Modified Capabilities**: List existing capabilities whose REQUIREMENTS are changing. Only include if spec-level behavior changes (not just implementation details). Each needs a delta spec file. Check `openspec/specs/` for existing spec names. Leave empty if no requirement changes.
+      - **Impact**: Affected code, APIs, dependencies, or systems.
+
+
+      IMPORTANT: The Capabilities section is critical. It creates the contract
+      between
+
+      proposal and specs phases. Research existing specs before filling this in.
+
+      Each capability listed here will need a corresponding spec file.
+
+
+      Every change must either declare at least one capability (new or
+
+      modified) or explicitly opt out of specs: `openspec validate` rejects a
+
+      change with zero deltas unless the change's `.openspec.yaml` sets
+
+      `skip_specs: true`. Use `skip_specs: true` only when no spec-level
+
+      behavior changes (pure refactor, tooling, docs) - specs describe
+
+      behavior, so if behavior does not change, no spec should change either.
+
+      Do not invent a requirement just to satisfy validation.
+
+
+      Keep it concise (1-2 pages). Focus on the "why" not the "how" -
+
+      implementation details belong in design.md.
+
+
+      This is the foundation - specs, design, and tasks all build on this.
+    requires: []
+  - id: specs
+    generates: specs/**/*.md
+    description: Detailed specifications for the change
+    template: spec.md
+    instruction: >
+      Create specification files that define WHAT the system should do.
+
+
+      A spec is a behavior contract, not an implementation plan.
+
+
+      Good spec content:
+
+      - Observable behavior users or downstream systems rely on
+
+      - Inputs, outputs, and error conditions
+
+      - External constraints (security, privacy, reliability, compatibility)
+
+      - Scenarios that can be tested or explicitly validated
+
+
+      Avoid in specs:
+
+      - Internal class/function names
+
+      - Library or framework choices
+
+      - Step-by-step implementation details
+
+      - Detailed execution plans (those belong in design.md or tasks.md)
+
+
+      Quick test: if the implementation can change without changing externally
+
+      visible behavior, it likely does not belong in the spec.
+
+
+      Create one spec file per capability listed in the proposal's Capabilities
+      section.
+
+      - New capabilities: use the exact kebab-case name from the proposal
+      (specs/<capability>/spec.md).
+
+      - Modified capabilities: use the existing spec folder name from
+      openspec/specs/<capability>/ when creating the delta spec at
+      specs/<capability>/spec.md.
+
+
+      There must be at least one spec file unless the change's `.openspec.yaml`
+
+      sets `skip_specs: true` (no spec-level behavior change) - `openspec
+      validate`
+
+      rejects a zero-delta change without that marker. If the proposal lists no
+
+      capabilities and `skip_specs` is not set, revisit the proposal first.
+
+
+      Delta operations (use ## headers):
+
+      - **ADDED Requirements**: New capabilities
+
+      - **MODIFIED Requirements**: Changed behavior - MUST include full updated
+      content
+
+      - **REMOVED Requirements**: Deprecated features - MUST include **Reason**
+      and **Migration**
+
+      - **RENAMED Requirements**: Name changes only - use FROM:/TO: format
+
+
+      Format requirements:
+
+      - Each requirement: `### Requirement: <name>` followed by description
+
+      - Use SHALL/MUST for normative requirements (avoid should/may)
+
+      - Each scenario: `#### Scenario: <name>` with WHEN/THEN format
+
+      - **CRITICAL**: Scenarios MUST use exactly 4 hashtags (`####`). Using 3
+      hashtags or bullets will fail silently.
+
+      - Every requirement MUST have at least one scenario.
+
+
+      New capabilities only: start the delta spec with a `## Purpose` section -
+
+      one or two sentences (50+ characters, or `openspec validate --strict`
+
+      reports it as too brief) describing what the capability is for. Archive
+
+      copies it into the main spec it creates; without it the new main spec is
+
+      left with a `TBD ... Update Purpose after archive` placeholder to fill in
+
+      by hand. Do NOT add `## Purpose` to a delta for an existing capability -
+
+      that spec already has one and the delta's is ignored. To change an
+
+      existing capability's Purpose - including a leftover `TBD` placeholder -
+
+      edit `openspec/specs/<capability>/spec.md` directly.
+
+
+      MODIFIED requirements workflow:
+
+      1. Locate the existing requirement in openspec/specs/<capability>/spec.md
+
+      2. Copy the ENTIRE requirement block (from `### Requirement:` through all
+      scenarios)
+
+      3. Paste under `## MODIFIED Requirements` and edit to reflect new behavior
+
+      4. Ensure header text matches exactly (whitespace-insensitive)
+
+
+      Common pitfall: Using MODIFIED with partial content loses detail at
+      archive time.
+
+      If adding new concerns without changing existing behavior, use ADDED
+      instead.
+
+
+      Example (a new capability, so it opens with `## Purpose`):
+
+      ```
+
+      ## Purpose
+
+
+      Lets users take their data out of the product in a portable format.
+
+
+      ## ADDED Requirements
+
+
+      ### Requirement: User can export data
+
+      The system SHALL allow users to export their data in CSV format.
+
+
+      #### Scenario: Successful export
+
+      - **WHEN** user clicks "Export" button
+
+      - **THEN** system downloads a CSV file with all user data
+
+
+      ## REMOVED Requirements
+
+
+      ### Requirement: Legacy export
+
+      **Reason**: Replaced by new export system
+
+      **Migration**: Use new export endpoint at /api/v2/export
+
+      ```
+
+
+      Specs should be testable - each scenario is a potential test case.
+    requires:
+      - proposal
+  - id: design
+    generates: design.md
+    description: Technical design document with implementation details
+    template: design.md
+    instruction: >
+      Create the design document that explains HOW to implement the change.
+
+
+      When to include design.md (create only if any apply):
+
+      - Cross-cutting change (multiple services/modules) or new architectural
+      pattern
+
+      - New external dependency or significant data model changes
+
+      - Security, performance, or migration complexity
+
+      - Ambiguity that benefits from technical decisions before coding
+
+
+      Sections:
+
+      - **Context**: Only the current state and constraints needed to explain
+      the approach. Reference the proposal for motivation instead of restating
+      it (e.g., "See proposal.md - Why").
+
+      - **Goals / Non-Goals**: What this design achieves and explicitly
+      excludes. Don't restate the proposal's scope - add only design-level
+      boundaries.
+
+      - **Decisions**: Key technical choices with rationale (why X over Y?).
+      Include alternatives considered for each decision.
+
+      - **Risks / Trade-offs**: Known limitations, things that could go wrong.
+      Format: [Risk] → Mitigation
+
+      - **Migration Plan**: Steps to deploy, rollback strategy (if applicable)
+
+      - **Open Questions**: Unknowns that can safely be answered later without
+        changing the specs, the approach, or the task breakdown. Omit if none.
+
+      Open questions are for genuinely deferrable unknowns, not decisions you
+
+      skipped. If a question would change the specs, the chosen approach, or
+
+      the task breakdown, resolve it now - ask the user instead of guessing.
+
+
+      Focus on architecture and approach, not line-by-line implementation.
+
+      The proposal covers why and what; design covers how. Reference the
+
+      proposal for motivation and, once written, the specs for requirements -
+
+      if a section would only restate them, point to them instead.
+
+
+      Good design docs explain the "why" behind technical decisions.
+    requires:
+      - proposal
+  - id: test-plan
+    generates: test-plan.md
+    description: Requirements-level test cases the applied code must satisfy
+    template: test-plan.md
+    instruction: >
+      Create the test plan: an enumerated, prioritized, traceable list of the
+      test cases this change must satisfy. Runs AFTER the spec deltas exist and
+      BEFORE any product code is applied.
+
+
+      **Requirements-level only — no test code.** Test code is written later by
+      `/opsx:apply`. This document is the contract that code must satisfy.
+
+
+      Prefer invoking the `/opsx:testplan` command to produce this artifact; it
+      applies the QA toolkit's test-case-generation methodology. If it is not
+      available, follow the steps below directly.
+
+
+      Gate checks (stop early if unmet):
+
+      - `proposal.md` and at least one spec delta must exist. If missing, tell
+      the user to run `/opsx:propose` first and stop.
+
+      - No unresolved open question that would make a requirement ambiguous.
+      Surface it and stop instead of writing a case against a guess — an
+      ambiguous requirement produces false coverage.
+
+      - `design.md` is optional; read it when present for richer cases.
+
+
+      Steps:
+
+      1. **Requirements under test** — one row per requirement in the spec
+      deltas, using its heading as the id (e.g. `REQ-reset-request`).
+
+      2. **Derive test cases** — go beyond the happy-path scenarios already in
+      the delta: negative paths, boundaries, error handling, concurrency, and
+      (where the change touches them) security and performance. Each case gets
+      a stable id `TC-NN`; a category `[Unit] / [Contract] / [Integration] /
+      [E2E]`; a priority `P1` (critical path / security / data-loss — never
+      lower for these), `P2` (core regression), `P3` (edge); the
+      requirement(s) it covers; and a Given/When/Then intent plus the expected
+      observable result.
+
+      3. **Coverage matrix** — map every requirement to its covering `TC` ids.
+      Every `Scenario:` in the deltas must map to ≥1 case. A requirement with
+      zero cases is a hard failure: add cases until no right-hand cell is
+      empty.
+
+      4. **Non-functional candidates** — security / performance /
+      accessibility implications of the change. Write "None identified" only
+      when genuinely absent. A deferred area (e.g. rate limiting owned by
+      another capability) is recorded as deferred with its reason, never
+      silently dropped.
+
+      5. **Assumptions & open questions** — including anything a case asserts
+      only partially. A limit that is documented is honest; a limit hidden
+      behind a green check is not.
+
+
+      Self-check before writing: every requirement and every delta `Scenario:`
+      appears in the coverage matrix with ≥1 `TC`; every `TC` has an id,
+      category, priority and ≥1 covered requirement; no product code and no
+      invented UI details; P1 on every security / data-loss / critical-path
+      case.
+
+
+      Write the file with Status `Draft — awaiting approval`, then report the
+      path, the counts by category and priority, and any requirement that
+      needed extra cases to reach coverage. Ask the user to review and approve:
+      the tasks step, `/opsx:apply`, `/opsx:verify` and `/opsx:archive` all
+      treat this file as the coverage source of truth.
+    requires:
+      - specs
+  - id: tasks
+    generates: tasks.md
+    description: Implementation checklist with trackable tasks
+    template: tasks.md
+    instruction: >
+      Create the task list that breaks down the implementation work.
+
+
+      Before writing tasks, check design.md for Open Questions. If any of them
+
+      would change what gets built, resolve them with the user first - do not
+
+      bake an unstated assumption into the task list.
+
+
+      **IMPORTANT: Follow the template below exactly.** The apply phase parses
+
+      checkbox format to track progress. Tasks not using `- [ ]` won't be
+      tracked.
+
+
+      Guidelines:
+
+      - Group related tasks under ## numbered headings
+
+      - Each task MUST be a checkbox: `- [ ] X.Y Task description`
+
+      - Tasks should be small enough to complete in one session
+
+      - Order tasks by dependency (what must be done first?)
+
+
+      Example:
+
+      ```
+
+      ## 1. Setup
+
+
+      - [ ] 1.1 Create new module structure
+
+      - [ ] 1.2 Add dependencies to package.json
+
+
+      ## 2. Core Implementation
+
+
+      - [ ] 2.1 Implement data export function
+
+      - [ ] 2.2 Add CSV formatting utilities
+
+      ```
+
+
+      Reference specs for what needs to be built, design for how to build it.
+
+      Each task should be verifiable - you know when it's done.
+
+
+      **Test-first derivation (NON-NEGOTIABLE).** `test-plan.md` is a required
+      input, not background reading. If it is missing, stop and tell the user to
+      run `/opsx:testplan`.
+
+      - Emit **one test task per `TC-NN`**, placed **before** the
+      implementation task(s) that satisfy it, carrying the `TC-NN` id in the
+      task text. Group them under a `### Tests (write first, must fail)`
+      heading.
+
+      - Every implementation task references the `TC-NN`(s) it makes pass, e.g.
+      `- [ ] 2.1 Implement the reset-confirm handler (covers TC-06, TC-07)`.
+
+      - The only tasks exempt from a `(covers ...)` reference are enabling
+      scaffolding (a migration, a fixture, a test double) asserted through the
+      cases above rather than on their own. Say so explicitly on the task.
+
+      - Do not emit an implementation task for a requirement that has no `TC`
+      in `test-plan.md`. Report the gap instead.
+
+      - Back-fill the test plan's Coverage Matrix "Planned task(s)" column so
+      traceability reads in both directions.
+    requires:
+      - specs
+      - design
+      - test-plan
+apply:
+  requires:
+    - tasks
+    - test-plan
+  tracks: tasks.md
+  instruction: |
+    Read context files, work through pending tasks, mark complete as you go.
+    Pause if you hit blockers or need clarification.
+
+    Test-first gate (NON-NEGOTIABLE — enforce before writing any product code):
+    - Pre-flight: assert test-plan.md exists and its Status is `Approved`. If it
+      is missing or unapproved, stop and tell the user to run or approve
+      `/opsx:testplan`. Do not write product code in the meantime.
+    - Per requirement: run that requirement's test-first tasks and confirm the
+      new tests FAIL before running its implementation tasks. A test that passes
+      before the implementation exists is not testing the change.
+    - Do not write product code for a requirement with no TC in test-plan.md.
+      Stop and report the gap.
+    - Never weaken a test to make it pass. A failing assertion that reflects the
+      spec is a bug in the code, not in the test — report it.
+    - No conditional test logic: no if/else and no skip to steer around data
+      that setup should have seeded.
+    - Name each test with its TC-NN, so a red run names the requirement.
+    - Leave the environment as found; reset shared state between tests.
+    - Lint and the full test suite must both be clean before reporting the
+      change complete.

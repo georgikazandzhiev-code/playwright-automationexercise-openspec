@@ -1,0 +1,127 @@
+schema: spec-driven-testfirst
+
+# Project context — included in every OpenSpec request.
+context: |
+  What this repo is: a spec-driven Playwright test suite for the PUBLIC, THIRD-PARTY
+  site https://www.automationexercise.com. We do NOT own the system under test and
+  have no access to its source. The product code of this repo IS the test suite.
+
+  Read that twice, because it inverts the usual OpenSpec mapping:
+    - "requirements" = the behaviour automationexercise.com must exhibit
+      (docs/requirements.md, REQ-* ids -> openspec/specs/<capability>/spec.md)
+    - "implementation" = the Playwright specs, page objects, fixtures and
+      services under src/ that prove those requirements
+    - a failing test is a defect report about the SITE, not a bug in the spec
+
+  Stack: TypeScript (strict), @playwright/test, Zod for API response contracts.
+  Layout: src/ui/pages (POM) · src/ui/fixtures.ts (DI) · src/api/services + schemas ·
+  src/tests/{ui,api}/**.spec.ts · src/utils/constants.ts (literals) ·
+  src/ui/data-providers + src/api/data-providers (dynamic data) ·
+  docs/requirements.md (baseline) · openspec/ (specs and changes).
+  Commands: `npm test` · `npm run test:ui` · `npm run test:api` ·
+  `npm run typecheck` · `npm run format` · `npm run spec:validate`.
+
+  Read openspec/AGENTS.md for the full workflow rules. The non-negotiable part:
+
+  TEST-FIRST (NON-NEGOTIABLE)
+  Every change's test plan and test cases are generated and approved before any
+  test code is applied.
+  - A change MUST have an approved test-plan.md (from /opsx:testplan, after
+    /opsx:propose) before /opsx:apply writes code.
+  - Every requirement in the change's spec deltas — and every Scenario: within
+    it — MUST be covered by >=1 test case (TC-NN). A requirement with zero cases
+    blocks the workflow.
+  - Every implementation task MUST trace to >=1 test-case id; every test case
+    MUST have an implementing task.
+  - /opsx:verify treats an uncovered requirement, a test case with no task, or a
+    task with no test-case reference as a BLOCKING failure.
+  - /opsx:archive does not fold a change whose test plan has uncovered
+    requirements.
+
+  Rationale: a coding agent that cannot see the required test cases writes tests
+  against its own guess of "done". Against a third-party site that guess is
+  invisible — there is no compiler and no product owner to contradict it.
+
+  THE RED STEP IS DIFFERENT HERE
+  The site already exists, so a new test may legitimately pass on first run.
+  "Confirm the test fails first" therefore becomes: confirm the test FAILS when
+  the requirement is violated. Prove the assertion has teeth before accepting a
+  green run — invert the expectation, or point it at data that must not satisfy
+  it, observe red, then restore. Record that you did so in the task. A green run
+  from an assertion never observed red is not evidence.
+
+  Hard rules while applying a change:
+  1. Do not write a test for a requirement that has no TC. Report the gap.
+  2. Prove every new assertion can go red (see above) before reporting green.
+  3. Never weaken a test to make it pass. A failing assertion that reflects the
+     spec is a defect of the SITE — record it in docs/requirements.md §10 and
+     report it. Loosening a Zod schema or an expected string to match a bug is
+     forbidden.
+  4. No conditional test logic — no if/else, no ternary, no test.skip() to steer
+     around data that setup should have seeded. Seed via the REST API instead.
+  5. No page.waitForTimeout. Web-first assertions auto-retry.
+  6. Name each test with its TC-NN, so a red run names the requirement.
+  7. Leave the environment as found. The site is a SHARED PUBLIC environment with
+     no reset: every account created is deleted in teardown via
+     DELETE /api/deleteAccount, and teardown runs even when assertions fail.
+  8. Unique-per-run identities for anything registered (constraint C3/REQ-X-03).
+  9. `npm run typecheck` and `npm test` must both be clean before a change is
+     reported complete. Report actual output, including failures.
+
+# Per-artifact rules.
+rules:
+  specs:
+    - Requirements describe the SITE's observable behaviour, never our test
+      framework's internals. "The page object exposes a locator" is not a
+      requirement; "the header shows Logged in as <name>" is.
+    - Every requirement traces back to a REQ-* id in docs/requirements.md. A
+      requirement with no baseline entry means the baseline is amended in the
+      same change — never invented spec-side only.
+    - Quote the site's real copy in scenarios (e.g. `Your email or password is
+      incorrect!`). Do not paraphrase user-visible strings.
+  test-plan:
+    - Requirements-level only — no test code, no invented selectors.
+    - Every requirement and every delta `Scenario:` must appear in the coverage
+      matrix with at least one TC. No empty right-hand cell.
+    - Category is [API] / [UI] / [E2E] here (there is no unit layer — we own no
+      product code).
+    - P1 on every security, data-loss, or critical-path case — never lower.
+      Account deletion and anti-enumeration are P1.
+    - Each case states its own seeding and cleanup, because the environment is
+      shared and never reset.
+    - A deferred area is recorded as deferred with its reason. Never mark a
+      partially-asserted case as fully covered.
+    - Write Status as `Draft — awaiting approval`; only a human flips it to
+      `Approved`.
+  tasks:
+    - test-plan.md is a required input. If it is missing, stop and ask for
+      /opsx:testplan.
+    - One test task per TC-NN, before the supporting page-object / service /
+      fixture task it depends on, under a `### Tests (write first)` heading.
+    - Every supporting task carries `(covers TC-NN)`. The only exemption is
+      enabling scaffolding (a fixture, a data provider), labelled as such.
+    - Include an explicit "prove red" task per requirement group.
+    - Back-fill the test plan's Coverage Matrix "Planned task(s)" column.
+
+# Per-operation advisory guidance.
+operations:
+  apply:
+    guidance:
+      - Assert test-plan.md exists and reads `Approved` before writing any test
+        code; stop and report if not.
+      - Prove each new assertion can fail before accepting it as passing.
+      - Search src/ui/pages, src/api/services, src/utils/constants.ts and the
+        data-providers for an existing equivalent before adding anything new.
+      - Report the actual test and typecheck output, including failures and
+        flakes. A skipped step is stated, not omitted.
+      - A site defect found while applying goes into docs/requirements.md §10
+        and the change's report — it is never absorbed into a softer assertion.
+  archive:
+    guidance:
+      - Before folding deltas into openspec/specs/, run the coverage gate —
+        every requirement and scenario covered by a TC, every TC implemented by
+        a task, every task tracing to a TC.
+      - Block the archive on an uncovered requirement. An archived change
+        becomes the spec of record — it must not enshrine untested behaviour.
+      - Confirm docs/requirements.md was amended in the same change if any REQ
+        id was added, changed or removed.
