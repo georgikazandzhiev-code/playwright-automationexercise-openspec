@@ -75,11 +75,12 @@ on purpose.
 | Capability          | Requirements    | Automated                                                    |
 | ------------------- | --------------- | ------------------------------------------------------------ |
 | `authentication`    | REQ-AUT-01 … 06 | **✅ complete** — 13 cases, `harden-authentication-coverage` |
+| `security-baseline` | REQ-SEC-01 … 15 | **✅ complete** — 21 cases, `add-security-baseline-coverage` |
 | `account-lifecycle` | REQ-ACC-01 … 07 | partial — inherited registration specs                       |
 | `product-search`    | REQ-SRH-01 … 03 | partial — inherited search specs                             |
 | `shopping-cart`     | REQ-CRT-01 … 06 | partial — inherited cart specs                               |
 | `checkout`          | REQ-CHK-01 … 07 | partial — inherited checkout spec                            |
-| `public-api`        | REQ-API-01 … 14 | partial — APIs 1, 5, 6, 7, 11, 12                            |
+| `public-api`        | REQ-API-01 … 14 | partial — APIs 1, 2, 4, 5, 6, 7, 9, 10, 11, 12               |
 | `product-catalog`   | REQ-CAT-01 … 05 | —                                                            |
 | `product-reviews`   | REQ-REV-01 … 03 | —                                                            |
 | `subscription`      | REQ-SUB-01 … 03 | —                                                            |
@@ -149,9 +150,68 @@ Full list in `openspec/project.md`. The ones that get code rejected:
 7. Delete every account you create, in teardown, even on failure.
 8. One tag per `test()`: `@e2e`, `@negative`, `@api`, `@sanity`. Never on `describe()`.
 
+## Security coverage
+
+The `security-baseline` capability turns the **OWASP Top 10 (2021)** and the **OWASP API
+Security Top 10 (2023)** into fifteen requirements a black-box test can actually measure,
+and states plainly which categories it cannot reach. The full matrix — every one of the
+twenty categories, with the reason for each gap — is in the change's
+[test plan](openspec/changes/add-security-baseline-coverage/test-plan.md) §4. Nothing in it
+is blank.
+
+**Covered:** A01 access control · A03 injection, both the server branch and the rendered
+branch · A05 misconfiguration · A07 authentication and session · API1 BOLA · API2 · API3
+object-property exposure · API8. Partly: A02 and A04, at the surface only.
+
+**Out of scope, with the tooling that owns it:** A06 dependency scanning · A08 supply chain
+· A09 logging and monitoring · A02 internals · A04/API4 volumetric rate limiting.
+**Not applicable to this site:** A10/API7 SSRF (no endpoint takes a URL) and API5 BFLA (the
+site publishes no roles).
+
+Fourteen of the twenty-one cases pass. Seven fail, because the site is genuinely insecure —
+see below.
+
 ## Known site defects
 
 Recorded in `docs/requirements.md` §10 so that a test asserting the documented contract may
-fail _by design_ rather than being weakened to match the bug. Currently: the
-`searchProduct` error code divergence (D1), ad interstitials intercepting header clicks
-(D2), and `createAccount` returning HTTP 200 with body 201 (D3).
+fail _by design_ rather than being weakened to match the bug.
+
+**Functional:** the `searchProduct` error-code divergence (D1), ad interstitials
+intercepting header clicks (D2), and `createAccount` returning HTTP 200 with body 201 (D3).
+
+**Security (D4 … D10):** no CSP or HSTS · `x-powered-by` discloses the framework version ·
+cookies lack `Secure` · `getUserDetailByEmail` serves a registered account's date of birth,
+employer and postal address to an unauthenticated caller · the same endpoint distinguishes
+registered from unregistered emails · `/checkout` and `/payment` render their forms to a
+guest · `GET /delete_account` renders the deletion confirmation to a guest.
+
+Each was written as a test asserting the requirement, run, observed failing — the red run
+_is_ the evidence — then commented out in place with `// TODO: FIXME: D<n>`. Never
+`test.skip()`, which would report a false green to anyone counting skips. Uncommenting one
+block is the whole of the work if the site is ever fixed.
+
+### On publishing these findings
+
+This repository is a public portfolio of a testing workflow, and the findings are part of
+what the workflow produced. How they were obtained matters, so it is stated rather than
+assumed:
+
+- Every finding came from a **single read request** to an endpoint the vendor documents
+  itself on `/api_list`, or from an account this suite created and deleted in the same test.
+- **No account other than the suite's own was ever touched**, and no personal data of any
+  real user appears anywhere in this repository. All test data is synthetic.
+- **Nothing destructive was run.** `DROP` / `DELETE` / `UPDATE` and timing payloads are
+  excluded from `src/api/data-providers/injection.data.ts` by construction, with the reason
+  written in the file: a payload that succeeded against a shared public site would damage it
+  for everyone.
+- **The two access-control findings stop at the guard.** D9 and D10 assert that a form is
+  not served to a guest. Neither submits a payment nor completes a deletion — demonstrating
+  that a guard is missing does not require exercising what it was guarding.
+- No volumetric, brute-force or enumeration testing was performed; those are listed as out
+  of scope with their reasons.
+
+`automationexercise.com` is a free practice target published for exactly this kind of
+exercise, and some of these behaviours may well be deliberate. The purpose here is
+educational: to show what a security-aware QA baseline looks like when it is specified,
+traced and proved rather than asserted. If the site's maintainers would like anything here
+removed, open an issue and it will be.
