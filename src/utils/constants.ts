@@ -7,6 +7,14 @@ export const API_PRODUCTS_LIST_PATH = '/api/productsList';
 export const API_SEARCH_PRODUCT_PATH = '/api/searchProduct';
 export const API_CREATE_ACCOUNT_PATH = '/api/createAccount';
 export const API_DELETE_ACCOUNT_PATH = '/api/deleteAccount';
+/** API 7 / 10 — verifyLogin (used as the seeding precondition guard, TC-01). */
+export const API_VERIFY_LOGIN_PATH = '/api/verifyLogin';
+
+/** UI routes. Header clicks are ad-intercepted on this site (defect D2), so paths are needed. */
+export const UI_PATH_HOME = '/';
+export const UI_PATH_LOGIN = '/login';
+export const UI_PATH_PRODUCTS = '/products';
+export const UI_PATH_CART = '/view_cart';
 
 /** API body `responseCode` values (site JSON; HTTP status is often 200 for all). */
 export const API_RESPONSE_CODE_OK = 200;
@@ -28,6 +36,22 @@ export const ACCOUNT_CREATED_HEADING = 'Account Created!';
 
 /** Login failure copy from site (Test Case 3). */
 export const LOGIN_ERROR_INCORRECT = 'Your email or password is incorrect!';
+
+/**
+ * Authentication capability copy — verified against the live DOM.
+ * REQ-AUT-01 headings, the header session indicator and the logged-out control.
+ */
+export const LOGIN_SECTION_HEADING = 'Login to your account';
+export const NEW_USER_SIGNUP_HEADING = 'New User Signup!';
+export const LOGGED_IN_AS_TEXT = 'Logged in as';
+export const SIGNUP_LOGIN_LINK_LABEL = 'Signup / Login';
+export const LOGOUT_LINK_LABEL = 'Logout';
+
+/** API 7 / 10 body messages (verifyLogin). */
+export const API_MESSAGE_USER_EXISTS = 'User exists!';
+export const API_MESSAGE_USER_NOT_FOUND = 'User not found!';
+/** verifyLogin body code for credentials matching no account (API 10). */
+export const API_RESPONSE_CODE_NOT_FOUND = 404;
 
 /** Search keyword with stable inventory on the demo shop. */
 export const SEARCH_KEYWORD_TSHIRT = 'Tshirt';

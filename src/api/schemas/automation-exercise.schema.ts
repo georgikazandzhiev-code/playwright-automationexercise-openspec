@@ -41,9 +41,20 @@ export const ApiMessageResponseSchema = z.strictObject({
   message: z.string().min(1),
 });
 
+/**
+ * verifyLogin body (API 7 / 8 / 10). Structurally identical to the generic message
+ * body today, but kept as its own schema so a divergence in one endpoint's contract
+ * fails that endpoint's tests instead of silently spreading across every caller.
+ */
+export const VerifyLoginResponseSchema = z.strictObject({
+  responseCode: z.number(),
+  message: z.string().min(1),
+});
+
 export type ProductCategory = z.infer<typeof ProductCategorySchema>;
 export type CatalogProduct = z.infer<typeof CatalogProductSchema>;
 export type ProductsListResponse = z.infer<typeof ProductsListResponseSchema>;
 export type SearchProductsResponse = z.infer<typeof SearchProductsResponseSchema>;
 export type ApiErrorResponse = z.infer<typeof ApiErrorResponseSchema>;
 export type ApiMessageResponse = z.infer<typeof ApiMessageResponseSchema>;
+export type VerifyLoginResponse = z.infer<typeof VerifyLoginResponseSchema>;

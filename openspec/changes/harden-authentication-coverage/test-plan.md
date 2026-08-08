@@ -2,7 +2,7 @@
 
 **Change:** `openspec/changes/harden-authentication-coverage`
 **Proposal:** [proposal.md](proposal.md) · **Spec deltas:** [specs/authentication/spec.md](specs/authentication/spec.md)
-**Author (agent):** `/opsx:testplan` · **Status:** Draft — awaiting approval
+**Author (agent):** `/opsx:testplan` · **Status:** Approved
 **Traceability:** every requirement in the spec deltas is covered by ≥1 test case (see §5).
 
 > Requirements-level test cases only — **no test code**. Code is applied later by

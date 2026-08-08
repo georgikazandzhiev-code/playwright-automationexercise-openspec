@@ -1,64 +1,157 @@
-# Playwright — Automation Exercise (POM)
+# playwright-automationexercise-openspec
 
-End-to-end tests for **https://www.automationexercise.com** using the same **Page Object Model + fixtures** style as [playwright-pom-boilerplate](https://github.com/georgikazandzhiev-code/playwright-pom-boilerplate).
+Spec-driven Playwright tests for **https://www.automationexercise.com** — a public
+practice storefront we do not own.
 
-## What is covered
+The tests are not the point. The chain that produces them is:
 
-| Task          | Spec                                 | Flow                                                                     |
-| ------------- | ------------------------------------ | ------------------------------------------------------------------------ |
-| **1**         | `task1-register.positive.spec.ts`    | Register new user → **Account Created!** → continue → logged-in banner   |
-| **1 (neg)**   | `task1-register.negative.spec.ts`    | Invalid email blocked by **HTML5** validation                            |
-| **2**         | `task2-search-cart.positive.spec.ts` | Search **Tshirt** → open first hit → add to cart → cart assertions       |
-| **2 (neg)**   | `task2-search.negative.spec.ts`      | Nonsense query → **zero** product cards                                  |
-| **3**         | `task3-login-logout.spec.ts`         | Login with `.env` user → logout → Signup/Login visible again             |
-| **3 (neg)**   | same file                            | Random email + wrong password → **Your email or password is incorrect!** |
-| **API**       | `products-list.positive.spec.ts`     | **GET** `/api/productsList` → 200 + catalog (API 1)                      |
-| **API**       | `search-product.positive.spec.ts`    | **POST** `/api/searchProduct` with keyword → results (API 5)             |
-| **API (neg)** | `search-product.negative.spec.ts`    | **POST** search without `search_product` → JSON error (API 6)            |
-
-## Setup
-
-```powershell
-git clone https://github.com/georgikazandzhiev-code/playwright-automationexercise.git
-cd playwright-automationexercise
-npm install
-npx playwright install
-copy .env.example .env   # then edit values
-npm test          # UI + API
-npm run test:ui   # browser flows only
-npm run test:api  # REST API only (no browser)
-npm run test:report   # full run + HTML + test-results/report.json
-npm run report:open   # open HTML report in browser
+```
+docs/requirements.md          reviewable baseline (REQ-*), distilled from the vendor's
+                              26 published test cases and 14 published APIs
+        ↓
+openspec/specs/<cap>/spec.md  11 capability specs — behaviour contracts with Scenario blocks
+        ↓
+openspec/changes/<id>/        proposal → spec delta → test-plan (TC-*) → tasks
+        ↓
+src/tests/**                  Playwright specs, each named with its TC id
 ```
 
-The site may show a **cookie / consent** overlay and **Google Vignette** interstitials (`#google_vignette`) that block the UI. The suite:
+Every test traces back to a written requirement. Every requirement traces forward to the
+test that proves it. A requirement with no test case blocks the workflow; a test with no
+requirement should not exist.
 
-- **Blocks** common ad network requests (`src/utils/consent.ts` → `blockThirdPartyAdRoutes`).
-- **Strips** the vignette hash and clicks **Close** when needed (`dismissGoogleVignetteIfPresent`).
-- **Clears** consent via `dismissSiteConsentDialog` and Playwright **locator handlers** registered in `src/ui/fixtures.ts`.
-- Calls `resolveSiteOverlays` after `goto` and after navigation clicks that often trigger ads.
+Derived from [playwright-automationexercise](https://github.com/georgikazandzhiev-code/playwright-automationexercise)
+— the page objects, fixtures and API services carry over; the requirements baseline, the
+capability specs and the workflow are new.
 
-### Environment variables
+## Why bother, for a site nobody owns
 
-| Variable             | Required for    | Notes                                            |
-| -------------------- | --------------- | ------------------------------------------------ |
-| `BASE_URL`           | optional        | Defaults to `https://www.automationexercise.com` |
-| `TEST_USER_EMAIL`    | Task 3 positive | Existing account on the site                     |
-| `TEST_USER_PASSWORD` | Task 3 positive | Matching password                                |
+That is exactly why. There is no backend source, no product owner and no internal spec. Write
+tests straight from a URL and every assertion encodes a private guess about intended
+behaviour — invisible to review, and indistinguishable from a bug that has been quietly
+accepted.
 
-Create the account manually once (or reuse one from Task 1) and put credentials into `.env`. Task 3 positive is **skipped** when these are missing.
+The requirements document makes the guesses explicit. The test plan makes the coverage
+countable. Three consequences fall out, and they are what actually differ from an ordinary
+Playwright repo:
+
+**A failing test is a defect report about the site, not a bug in our code.** There is no
+implementation to fix. When a requirement and the site disagree, either the site has a
+defect — recorded in `docs/requirements.md` §10 — or our requirement was wrong, and it is
+amended through a change. Softening the assertion is neither, and is forbidden.
+
+**"Red then green" does not work, so we prove red instead.** The feature already exists; a
+new test can pass on its first run, and a green run from an assertion never observed
+failing is not evidence. Every new assertion is deliberately inverted, run, observed red,
+and restored — see `openspec/AGENTS.md` § *Proving red* and group 3 of any change's
+`tasks.md`.
+
+**The environment is shared with the entire internet and never resets.** Every test seeds
+its own account through `POST /api/createAccount` and deletes it in teardown, including on
+failure. No shared `.env` credential, no `test.skip` when data is missing.
+
+## Quick start
+
+```powershell
+npm install
+npx playwright install
+copy .env.example .env      # optional — BASE_URL only
+
+npm test                    # full suite: UI + API
+npm run test:ui             # chromium project only
+npm run test:api            # REST API only, no browser
+npm run typecheck           # tsc --noEmit
+
+npm run spec:list           # active OpenSpec changes
+npm run spec:validate       # strict validation of specs and changes
+```
+
+## Capabilities and coverage
+
+Eleven capability specs cover all 26 vendor test cases and all 14 published APIs. Test
+coverage is being built one change at a time — the gap between the two columns is visible
+on purpose.
+
+| Capability | Requirements | Automated |
+|------------|--------------|-----------|
+| `authentication` | REQ-AUT-01 … 06 | **✅ complete** — 13 cases, `harden-authentication-coverage` |
+| `account-lifecycle` | REQ-ACC-01 … 07 | partial — inherited registration specs |
+| `product-search` | REQ-SRH-01 … 03 | partial — inherited search specs |
+| `shopping-cart` | REQ-CRT-01 … 06 | partial — inherited cart specs |
+| `checkout` | REQ-CHK-01 … 07 | partial — inherited checkout spec |
+| `public-api` | REQ-API-01 … 14 | partial — APIs 1, 5, 6, 7, 11, 12 |
+| `product-catalog` | REQ-CAT-01 … 05 | — |
+| `product-reviews` | REQ-REV-01 … 03 | — |
+| `subscription` | REQ-SUB-01 … 03 | — |
+| `contact-form` | REQ-CTC-01 … 03 | — |
+| `site-navigation` | REQ-NAV-01 … 04 | — |
+
+## The workflow
+
+```
+/opsx:explore → /opsx:propose → /opsx:testplan → /opsx:apply → /opsx:verify → /opsx:archive
+                                └─ test plan ──┘  (tests first,   (coverage
+                                   before code     then support     gate)
+                                                   code)
+```
+
+The gate that matters: **`/opsx:apply` refuses to write test code until a human has
+approved `test-plan.md`.** Not a formality — an agent that cannot see the required test
+cases writes tests against its own guess of "done", and against a third-party site nothing
+contradicts that guess.
+
+Slash commands live in `.claude/commands/opsx/`; the rules an agent must obey are in
+`openspec/AGENTS.md`.
+
+## Layout
+
+```
+docs/requirements.md          requirements baseline (REQ-*)
+openspec/
+  config.yaml                 schema selection, project context, per-artifact rules
+  AGENTS.md                   workflow rules for agents — read this first
+  project.md                  stack, layout, non-negotiable conventions
+  specs/<capability>/spec.md  current behaviour contract
+  changes/<change-id>/        active changes
+  schemas/                    spec-driven-testfirst templates
+src/
+  ui/pages/*.page.ts          page objects (extend BasePage)
+  ui/fixtures.ts              POM + seededAccount dependency injection
+  api/services/*.service.ts   REST clients
+  api/schemas/*.schema.ts     Zod response contracts (z.strictObject)
+  tests/ui/**.spec.ts         UI + E2E   (project: chromium)
+  tests/api/**.spec.ts        API        (project: api)
+  utils/constants.ts          every literal string, path and timeout
+  utils/consent.ts            ad / consent overlay neutralisation
+```
+
+## Environment
+
+| Variable | Required | Notes |
+|----------|----------|-------|
+| `BASE_URL` | no | Defaults to `https://www.automationexercise.com` |
+
+There is deliberately **no test-user credential**. Specs under the spec workflow seed their
+own accounts through the REST API. If you find a `TEST_USER_*` reference anywhere, it is a
+leftover — see `openspec/project.md` § *Known state of the inherited suite*.
 
 ## Conventions
 
-- **POM**: locators + assertions live in `src/ui/pages/*.page.ts`; specs orchestrate only.
-- **Data**: dynamic values from `src/ui/data-providers/*`; literals from `src/utils/constants.ts`.
-- **Error context**: `withStepContext` wraps major steps for clearer failures.
-- **Tags**: `@e2e`, `@negative` for filtering.
+Full list in `openspec/project.md`. The ones that get code rejected:
 
-## CI
+1. Import `test` from `src/ui/fixtures`, never from `@playwright/test`, in a UI spec.
+2. Take page objects from fixtures — `new SomePage(page)` in a test is a rejection.
+3. No `if`/`else`, no ternary, no `test.skip()` in a test body. Seed the data instead.
+4. No `page.waitForTimeout`. Web-first assertions auto-retry.
+5. Assert the API **body** `responseCode`, not the HTTP status — this site answers HTTP 200
+   for almost everything.
+6. Every user-visible string lives in `src/utils/constants.ts`.
+7. Delete every account you create, in teardown, even on failure.
+8. One tag per `test()`: `@e2e`, `@negative`, `@api`, `@sanity`. Never on `describe()`.
 
-GitHub Actions workflow installs browsers and runs `npm test`. For Task 3 positive, add repository **secrets** `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` if you want that path to run in CI (otherwise it skips).
+## Known site defects
 
-## Reference
-
-UI patterns inspired by [SlavinaP23/pw-framework](https://github.com/SlavinaP23/pw-framework) (selectors such as `data-qa` and product search), implemented here **without** a PageManager — fixtures wire page objects directly.
+Recorded in `docs/requirements.md` §10 so that a test asserting the documented contract may
+fail *by design* rather than being weakened to match the bug. Currently: the
+`searchProduct` error code divergence (D1), ad interstitials intercepting header clicks
+(D2), and `createAccount` returning HTTP 200 with body 201 (D3).

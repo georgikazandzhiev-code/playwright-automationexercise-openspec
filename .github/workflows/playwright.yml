@@ -11,9 +11,9 @@ jobs:
     timeout-minutes: 30
     runs-on: ubuntu-latest
     env:
+      # No TEST_USER_* secrets: specs seed their own account per test via the REST API
+      # and delete it in teardown. See openspec/project.md.
       BASE_URL: https://www.automationexercise.com
-      TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
-      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,6 +21,7 @@ jobs:
           node-version: '22'
       - run: npm install
       - run: npm run typecheck
+      - run: npm run spec:validate
       - run: npx playwright install --with-deps
       - run: npm test
       - if: failure()

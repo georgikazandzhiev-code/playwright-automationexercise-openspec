@@ -18,10 +18,20 @@ Playwright TypeScript tests target **`https://www.automationexercise.com`** (ove
 - `src/tests/api/*.spec.ts` — API flows only.
 - `src/utils/constants.ts` — Shared literals and patterns.
 
+## Spec layer (read before writing any test)
+
+- `docs/requirements.md` — the requirements baseline (`REQ-*`) for the site under test.
+- `openspec/specs/<capability>/spec.md` — behaviour contracts derived from it.
+- `openspec/AGENTS.md` — the workflow rules, including the test-first gate and "proving red".
+
+A test with no `TC-NN` in an approved `test-plan.md` does not get written.
+
 ## Credentials
 
-Task 3 positive requires `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` in `.env` (or CI secrets).
+There are none. Every spec seeds its own account via `POST /api/createAccount` (the
+`seededAccount` fixture) and deletes it in teardown, including on failure. Never introduce
+a shared `.env` credential or a `test.skip` when data is missing.
 
 ## Commands
 
-`npm test`, `npm run test:ui`, `npm run test:api`, `npm run test:headed`, `npm run typecheck`, `npm run format`.
+`npm test`, `npm run test:ui`, `npm run test:api`, `npm run test:headed`, `npm run typecheck`, `npm run format`, `npm run spec:validate`.

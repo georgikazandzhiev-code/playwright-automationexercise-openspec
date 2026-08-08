@@ -1,5 +1,26 @@
 # Test Execution Report — Automation Exercise
 
+> ## ⚠️ SUPERSEDED — historical snapshot of the upstream repo
+>
+> This report describes the suite of
+> [playwright-automationexercise](https://github.com/georgikazandzhiev-code/playwright-automationexercise)
+> at the point this repo forked from it. It is kept for provenance and is **no longer an
+> accurate description of what runs here**.
+>
+> Two things in it are now wrong:
+>
+> - The **Task 3 positive → SKIP\*** row and its footnote. That test seeded its account
+>   through the API and never skipped; the footnote described an earlier version. Stale
+>   documentation like this is what produced a false premise in
+>   `openspec/changes/harden-authentication-coverage/proposal.md` — see the correction at
+>   the top of that file.
+> - The **Task 3** rows themselves. That spec was replaced by 13 traceable cases
+>   (`TC-01 … TC-13`) covering the whole `authentication` capability.
+>
+> **Current coverage lives in the spec layer, not here:**
+> `docs/requirements.md` (requirements baseline) → `openspec/specs/` (capability contracts)
+> → `openspec/changes/<id>/test-plan.md` (test cases and coverage matrix).
+
 **Project:** [playwright-automationexercise](https://github.com/georgikazandzhiev-code/playwright-automationexercise)  
 **Target:** https://www.automationexercise.com  
 **Report type:** Regression summary (UI + API)  

@@ -4,15 +4,32 @@ The `authentication` capability is the load-bearing one: `shopping-cart` (REQ-CR
 every `checkout` requirement depend on a session existing and staying alive. It is also
 the capability whose inherited test coverage is worst.
 
-Today `src/tests/ui/task3-login-logout.spec.ts` reads `TEST_USER_EMAIL` /
-`TEST_USER_PASSWORD` from `.env` and **skips when they are absent**. That is a false green
-in three ways:
+> **Correction, recorded rather than quietly edited.** This proposal's first draft claimed
+> `task3-login-logout.spec.ts` skips when `TEST_USER_EMAIL` is unset. Reading the file
+> proved otherwise — it already seeds through `POST /api/createAccount` and skips nothing.
+> The claim came from `README.md`, which still says it does. The real problem turned out to
+> be narrower and more interesting, and is stated below. Left visible because a proposal
+> built on an unchecked premise is exactly what this workflow exists to catch.
 
-1. CI without the secrets reports success while testing nothing.
-2. The shared account can be deleted by any other run against this public site (constraint
-   C1), turning a real regression into a skip.
-3. A skip is invisible in a summary line — the signal this whole workflow exists to
-   protect is exactly the one being lost.
+Today's coverage of `authentication` is `src/tests/ui/task3-login-logout.spec.ts`: two
+tests, correctly seeded. What is wrong with it is not the seeding — it is what it asserts.
+
+1. **The positive test cannot fail for the right reason.** It calls
+   `assertAuthenticatedSessionVisible()`, which matches the regex `/Logged in as/i`. Any
+   session, as any user, satisfies it. If the site logged you in as somebody else, the test
+   stays green. This is precisely the weakness the REQ-AUT-02 tightening below targets.
+2. **The negative test conflates two distinct requirements.** It submits an unknown email
+   *and* a wrong password in one action, so it cannot distinguish REQ-AUT-03's two
+   scenarios, and it proves nothing at all about non-disclosure between them.
+3. **Four of six requirements have no test.** REQ-AUT-01, REQ-AUT-05 and REQ-AUT-06 are
+   untested; REQ-AUT-04 is asserted only as "the `Signup / Login` link is back".
+4. **A `TEST_USER_EMAIL` trap is still armed.** `src/ui/data-providers/login.data.ts`
+   exports `getExistingUserCredentials()`, which throws unless two env vars are set.
+   Nothing imports it — it is dead code. `README.md`, `docs/TEST-EXECUTION-REPORT.md`,
+   `.cursor/rules/project-overview.mdc` and `.github/workflows/playwright.yml` all still
+   present those vars as required and state that Task 3 skips without them. Documentation
+   that describes a suite the repo does not have is worse than no documentation: it is what
+   produced the false premise at the top of this section.
 
 Writing the capability's tests properly also surfaced two genuine gaps in the baseline
 spec, which is what a spec review is for:
@@ -34,8 +51,12 @@ spec, which is what a spec review is for:
 - Implement the full `authentication` capability (REQ-AUT-01 … REQ-AUT-06) as Playwright
   specs that **seed their own account** through `POST /api/createAccount` and delete it
   through `DELETE /api/deleteAccount` in teardown.
-- **Remove** `src/tests/ui/task3-login-logout.spec.ts`, superseded by the above. Its
-  `TEST_USER_EMAIL` dependency and its `test.skip()` go with it.
+- **Remove** `src/tests/ui/task3-login-logout.spec.ts`, superseded by the above.
+- **Remove** `src/ui/data-providers/login.data.ts` — dead code whose only effect is to make
+  two env vars look required.
+- **Correct** `README.md`, `docs/TEST-EXECUTION-REPORT.md`,
+  `.cursor/rules/project-overview.mdc` and `.github/workflows/playwright.yml`, which
+  document a `TEST_USER_EMAIL` dependency and a conditional skip that no longer exist.
 
 Not breaking: no existing requirement is weakened or removed.
 

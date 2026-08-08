@@ -4,6 +4,8 @@ import {
   installConsentHandler,
   installVignetteCloseHandler,
 } from '@utils/consent';
+import { buildSeededAccount, type SeededAccount } from '@api-data-providers/account-api.data';
+import { AccountApiService } from '../api/services/account-api.service';
 import { AccountCreatedPage } from './pages/account-created.page';
 import { CartPage } from './pages/cart.page';
 import { CheckoutPage } from './pages/checkout.page';
@@ -16,6 +18,9 @@ import { RegisterAccountPage } from './pages/register-account.page';
 import { SignupLoginPage } from './pages/signup-login.page';
 
 type PageFixtures = {
+  accountApi: AccountApiService;
+  seededAccount: SeededAccount;
+  disposableAccount: SeededAccount;
   navigationPage: NavigationPage;
   signupLoginPage: SignupLoginPage;
   registerAccountPage: RegisterAccountPage;
@@ -45,6 +50,35 @@ export const test = base.extend<PageFixtures>({
       // optional
     }
     await use(page);
+  },
+  accountApi: async ({ request }, use) => {
+    await use(new AccountApiService(request));
+  },
+  /**
+   * An account that exists for the duration of one test, created through the REST API
+   * and deleted after it — including when the test failed.
+   *
+   * This is how a UI test gets "an account that exists" without a shared `.env`
+   * credential that any other run against this public site can delete (constraint C1),
+   * and without a `test.skip` when it is missing. The teardown ASSERTS the deletion:
+   * on a shared environment with no reset, a cleanup that silently fails is a leak.
+   */
+  seededAccount: async ({ accountApi }, use) => {
+    const account = buildSeededAccount();
+    await accountApi.seedAccount(account.payload);
+    await use(account);
+    await accountApi.removeAccount(account.email, account.password);
+  },
+  /**
+   * Same, for a test whose SUBJECT is deleting the account (TC-13). Teardown discards
+   * without asserting, because by then the account is meant to be gone — while still
+   * covering the case where the test failed before its own delete step.
+   */
+  disposableAccount: async ({ accountApi }, use) => {
+    const account = buildSeededAccount();
+    await accountApi.seedAccount(account.payload);
+    await use(account);
+    await accountApi.discardAccount(account.email, account.password);
   },
   navigationPage: async ({ page }, use) => {
     await use(new NavigationPage(page));
