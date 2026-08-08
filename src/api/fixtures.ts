@@ -2,10 +2,14 @@ import { test as base } from '@playwright/test';
 import { buildSeededAccount, type SeededAccount } from '@api-data-providers/account-api.data';
 import { AccountApiService } from './services/account-api.service';
 import { ProductsApiService } from './services/products-api.service';
+import { SecurityProbeService } from './services/security-probe.service';
+import { UserApiService } from './services/user-api.service';
 
 type ApiFixtures = {
   productsApi: ProductsApiService;
   accountApi: AccountApiService;
+  userApi: UserApiService;
+  securityProbe: SecurityProbeService;
   seededAccount: SeededAccount;
 };
 
@@ -18,6 +22,12 @@ export const test = base.extend<ApiFixtures>({
   },
   accountApi: async ({ request }, use) => {
     await use(new AccountApiService(request));
+  },
+  userApi: async ({ request }, use) => {
+    await use(new UserApiService(request));
+  },
+  securityProbe: async ({ request }, use) => {
+    await use(new SecurityProbeService(request));
   },
   /**
    * An account that exists for the duration of one test, deleted afterwards even when

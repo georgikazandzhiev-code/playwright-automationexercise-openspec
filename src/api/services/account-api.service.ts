@@ -1,16 +1,23 @@
 import { APIRequestContext, APIResponse, expect } from '@playwright/test';
 import {
+  ApiErrorResponseSchema,
   ApiMessageResponseSchema,
   VerifyLoginResponseSchema,
+  type ApiErrorResponse,
   type ApiMessageResponse,
   type VerifyLoginResponse,
 } from '../schemas/automation-exercise.schema';
 import type { SeedAccountPayload } from '../data-providers/account-api.data';
+import { assertMethodNotAllowed } from './api-refusal';
 import {
   API_CREATE_ACCOUNT_PATH,
   API_DELETE_ACCOUNT_PATH,
+  API_MESSAGE_USER_NOT_FOUND,
   API_RESPONSE_CODE_CREATED,
+  API_RESPONSE_CODE_LEGACY_BAD_REQUEST,
+  API_RESPONSE_CODE_NOT_FOUND,
   API_RESPONSE_CODE_OK,
+  API_VERIFY_LOGIN_MISSING_PARAM_MARKERS,
   API_VERIFY_LOGIN_PATH,
   HTTP_STATUS_OK,
 } from '@utils/constants';
@@ -43,6 +50,59 @@ export class AccountApiService {
     const response = await this.verifyLogin(email, password);
     expect(response.status(), 'verifyLogin HTTP status').toBe(HTTP_STATUS_OK);
     return VerifyLoginResponseSchema.parse(await response.json());
+  };
+
+  /**
+   * DELETE /api/verifyLogin — an unsupported method on a POST-only endpoint (API 9).
+   */
+  deleteVerifyLogin = async (): Promise<APIResponse> => this.request.delete(API_VERIFY_LOGIN_PATH);
+
+  /**
+   * POST /api/verifyLogin carrying only an email (API 8).
+   * @param email - Any email address; the password is deliberately absent.
+   */
+  verifyLoginWithoutPassword = async (email: string): Promise<APIResponse> =>
+    this.request.post(API_VERIFY_LOGIN_PATH, { form: { email } });
+
+  /**
+   * Assert API 9: verifyLogin refuses DELETE (REQ-API-09).
+   */
+  assertVerifyLoginRefusesDelete = async (): Promise<ApiErrorResponse> =>
+    assertMethodNotAllowed(await this.deleteVerifyLogin(), 'DELETE verifyLogin');
+
+  /**
+   * Assert API 8: verifyLogin without a password is a bad request naming what is missing
+   * (REQ-API-08). The message is matched on markers rather than verbatim — the wording
+   * varies by deployment, and pinning it would make a copy change look like a regression.
+   * @param email - Email to send without a password.
+   */
+  assertVerifyLoginRejectsMissingPassword = async (email: string): Promise<ApiErrorResponse> => {
+    const response = await this.verifyLoginWithoutPassword(email);
+    expect(response.status(), 'verifyLogin missing-password HTTP status').toBe(HTTP_STATUS_OK);
+    const body = ApiErrorResponseSchema.parse(await response.json());
+    expect(body.responseCode, 'verifyLogin missing-password responseCode').toBe(
+      API_RESPONSE_CODE_LEGACY_BAD_REQUEST,
+    );
+    const normalizedMessage = body.message.toLowerCase();
+    for (const marker of API_VERIFY_LOGIN_MISSING_PARAM_MARKERS) {
+      expect(normalizedMessage, `message should mention ${marker}`).toContain(marker);
+    }
+    return body;
+  };
+
+  /**
+   * Assert API 10: credentials matching no account are refused (REQ-API-10).
+   * @param email - Email of no account.
+   * @param password - Any password.
+   */
+  assertVerifyLoginRejectsUnknownCredentials = async (
+    email: string,
+    password: string,
+  ): Promise<VerifyLoginResponse> => {
+    const body = await this.readVerifyLogin(email, password);
+    expect(body.responseCode, 'unknown-credentials responseCode').toBe(API_RESPONSE_CODE_NOT_FOUND);
+    expect(body.message, 'unknown-credentials message').toBe(API_MESSAGE_USER_NOT_FOUND);
+    return body;
   };
 
   /**

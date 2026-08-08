@@ -1,5 +1,10 @@
-import { expect, Locator, Page } from '@playwright/test';
-import { LOGGED_IN_AS_TEXT, UI_PATH_CART, UI_PATH_PRODUCTS } from '@utils/constants';
+import { expect, Cookie, Locator, Page } from '@playwright/test';
+import {
+  LOGGED_IN_AS_TEXT,
+  SESSION_COOKIE_NAME,
+  UI_PATH_CART,
+  UI_PATH_PRODUCTS,
+} from '@utils/constants';
 import { BasePage } from './base.page';
 
 /**
@@ -128,6 +133,31 @@ export class NavigationPage extends BasePage {
    */
   assertLoggedInAsExactly = async (registeredName: string): Promise<void> => {
     await expect(this.sessionUserName).toHaveText(registeredName);
+  };
+
+  /**
+   * The cookies this site has set in the current browser context (REQ-SEC-05, REQ-SEC-06).
+   * Scoped to the current URL, so a third-party ad cookie cannot be mistaken for the
+   * site's own.
+   */
+  readSiteCookies = async (): Promise<Cookie[]> => this.page.context().cookies(this.page.url());
+
+  /**
+   * The value of the session cookie, captured for the replay case (REQ-SEC-07).
+   *
+   * Throws rather than returning empty when the cookie is absent: a replay case that
+   * silently replayed nothing would pass for the wrong reason.
+   */
+  readSessionCookieValue = async (): Promise<string> => {
+    const sessionCookie = (await this.readSiteCookies()).find(
+      (cookie) => cookie.name === SESSION_COOKIE_NAME,
+    );
+    if (!sessionCookie) {
+      throw new Error(
+        `No "${SESSION_COOKIE_NAME}" cookie after logging in — the replay case has nothing to replay.`,
+      );
+    }
+    return sessionCookie.value;
   };
 
   /**

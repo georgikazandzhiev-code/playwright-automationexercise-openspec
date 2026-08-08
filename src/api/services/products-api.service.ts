@@ -7,7 +7,9 @@ import {
   type ProductsListResponse,
   type SearchProductsResponse,
 } from '../schemas/automation-exercise.schema';
+import { assertMethodNotAllowed } from './api-refusal';
 import {
+  API_BRANDS_LIST_PATH,
   API_PRODUCTS_LIST_PATH,
   API_RESPONSE_CODE_CLIENT_ERROR,
   API_RESPONSE_CODE_LEGACY_BAD_REQUEST,
@@ -66,6 +68,44 @@ export class ProductsApiService {
     expect(body.responseCode, 'search responseCode').toBe(API_RESPONSE_CODE_OK);
     expect(body.products.length, 'search should return at least one product').toBeGreaterThan(0);
     return body;
+  };
+
+  /**
+   * POST /api/productsList — an unsupported method on a read-only endpoint (API 2).
+   */
+  postProductsList = async (): Promise<APIResponse> => this.request.post(API_PRODUCTS_LIST_PATH);
+
+  /**
+   * PUT /api/brandsList — an unsupported method on a read-only endpoint (API 4).
+   */
+  putBrandsList = async (): Promise<APIResponse> => this.request.put(API_BRANDS_LIST_PATH);
+
+  /**
+   * Assert API 2: the catalogue endpoint refuses POST (REQ-API-02).
+   */
+  assertProductsListRefusesPost = async (): Promise<ApiErrorResponse> =>
+    assertMethodNotAllowed(await this.postProductsList(), 'POST productsList');
+
+  /**
+   * Assert API 4: the brands endpoint refuses PUT (REQ-API-04).
+   */
+  assertBrandsListRefusesPut = async (): Promise<ApiErrorResponse> =>
+    assertMethodNotAllowed(await this.putBrandsList(), 'PUT brandsList');
+
+  /**
+   * Search with an arbitrary term, returning both the validated body and the raw text.
+   *
+   * The raw text is what REQ-SEC-09 needs: a leaked database error would arrive as prose
+   * in the message, which a parsed-and-typed view of the body hides behind a `string`.
+   * @param keyword - Value for `search_product`, including hostile input.
+   */
+  readSearchProduct = async (
+    keyword: string,
+  ): Promise<{ parsed: SearchProductsResponse; rawBody: string }> => {
+    const response = await this.searchProduct(keyword);
+    expect(response.status(), 'POST searchProduct HTTP status').toBe(HTTP_STATUS_OK);
+    const rawBody = await response.text();
+    return { parsed: SearchProductsResponseSchema.parse(JSON.parse(rawBody)), rawBody };
   };
 
   /**

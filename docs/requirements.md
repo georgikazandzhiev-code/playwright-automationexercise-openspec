@@ -50,40 +50,51 @@ The public storefront at `https://www.automationexercise.com` and its public RES
 - contact form
 - static/navigational pages and scroll behaviour
 - REST API 1–14 as published on `/api_list`
+- the security baseline of §6.12 — the part of the OWASP Top 10 (2021) and the OWASP API
+  Security Top 10 (2023) that a black-box functional test can observe: transport, response
+  headers, cookie flags, session invalidation, cross-origin exposure, injection handling,
+  credential exposure, and authorisation of personal data and state-changing routes
 
 ### 2.2 Out of scope
 
-| Area | Reason |
-|------|--------|
-| Admin/back-office behaviour | Not exposed publicly |
-| Database state, email delivery | No access; the site sends no verifiable mail |
-| Payment processor integration | The site accepts any card data; no real gateway |
-| Performance, load, availability SLOs | No SLO is published; see [k6 note](#94-non-functional) |
-| Cross-browser matrix beyond Chromium | Deliberate first-iteration scope decision |
-| Accessibility conformance | No published target; candidate for a later change |
+| Area                                                 | Reason                                                                                               |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Admin/back-office behaviour                          | Not exposed publicly                                                                                 |
+| Database state, email delivery                       | No access; the site sends no verifiable mail                                                         |
+| Payment processor integration                        | The site accepts any card data; no real gateway                                                      |
+| Performance, load, availability SLOs                 | No SLO is published; see [k6 note](#94-non-functional)                                               |
+| Cross-browser matrix beyond Chromium                 | Deliberate first-iteration scope decision                                                            |
+| Accessibility conformance                            | No published target; candidate for a later change                                                    |
+| Cryptographic strength, key management, data at rest | Not observable from outside; needs a security review of a system we do not own (OWASP A02 internals) |
+| Vulnerable and outdated components                   | Belongs to dependency scanning / SCA in a pipeline, not to a functional test (A06)                   |
+| Security logging, monitoring and alerting            | No observable surface on a third-party site (A09)                                                    |
+| Software and data integrity, supply chain            | DevSecOps concern of the site's own pipeline (A08)                                                   |
+| Rate limiting, brute force, resource consumption     | Volumetric by definition; probing it on a shared public practice site would be abusive (A04, API4)   |
+| Server-side request forgery                          | **Not applicable** — no published endpoint accepts a URL, host or webhook target (A10, API7)         |
+| Broken function-level authorisation                  | **Not applicable** — the site publishes no roles, so there is no privileged function to deny (API5)  |
 
 ---
 
 ## 3. Actors
 
-| Actor | Definition |
-|-------|------------|
-| **Guest** | Unauthenticated visitor. Can browse, search, review, subscribe, use the cart and start checkout. |
-| **Registered user** | Holds an account (email + password). Adds delivery/billing address at registration. Can complete checkout. |
-| **API client** | Any HTTP client calling `/api/*`. Unauthenticated; identity is asserted by email+password in the request body. |
+| Actor               | Definition                                                                                                     |
+| ------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **Guest**           | Unauthenticated visitor. Can browse, search, review, subscribe, use the cart and start checkout.               |
+| **Registered user** | Holds an account (email + password). Adds delivery/billing address at registration. Can complete checkout.     |
+| **API client**      | Any HTTP client calling `/api/*`. Unauthenticated; identity is asserted by email+password in the request body. |
 
 ---
 
 ## 4. Glossary
 
-| Term | Meaning |
-|------|---------|
-| **Intake form** | The name + email form under *New User Signup!* on `/login`; gateway into the full registration form. |
-| **Account information form** | The full registration form on `/signup` (title, password, DOB, address, newsletter/offers opt-ins). |
-| **Authenticated banner** | The header text `Logged in as <username>` — the site's only visible session indicator. |
-| **Line item** | One product row in the cart: name, price, quantity, computed total. |
-| **`responseCode`** | A status-like integer inside the JSON **body** of an API response. It is independent of the HTTP status, which is `200` for most endpoints. |
-| **Vignette** | A Google full-page interstitial ad (`#google_vignette`) that intercepts clicks on this site. |
+| Term                         | Meaning                                                                                                                                     |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Intake form**              | The name + email form under _New User Signup!_ on `/login`; gateway into the full registration form.                                        |
+| **Account information form** | The full registration form on `/signup` (title, password, DOB, address, newsletter/offers opt-ins).                                         |
+| **Authenticated banner**     | The header text `Logged in as <username>` — the site's only visible session indicator.                                                      |
+| **Line item**                | One product row in the cart: name, price, quantity, computed total.                                                                         |
+| **`responseCode`**           | A status-like integer inside the JSON **body** of an API response. It is independent of the HTTP status, which is `200` for most endpoints. |
+| **Vignette**                 | A Google full-page interstitial ad (`#google_vignette`) that intercepts clicks on this site.                                                |
 
 ---
 
@@ -92,14 +103,14 @@ The public storefront at `https://www.automationexercise.com` and its public RES
 These are properties of the system under test, not of our framework. They constrain every
 requirement below and must be reflected in the capability specs.
 
-| # | Constraint | Consequence for testing |
-|---|-----------|------------------------|
-| **C1** | **Shared public environment.** Anyone in the world mutates the same catalogue, review list and account table concurrently. | No test may assert on global counts, on "the newest review", or on a fixed product id existing forever. Assert on *self-created* data. |
-| **C2** | **No data reset.** Every account created stays until deleted. | Every test that creates an account MUST delete it in teardown, via API 12 (`DELETE /api/deleteAccount`) rather than the UI, so cleanup survives a mid-test failure. |
-| **C3** | **Ad interstitials.** Google vignette and a CMP consent dialog intercept clicks unpredictably. | Header navigation is unreliable; direct `goto` to a known path is the sanctioned workaround. Overlay resolution must be centralised, never per-test. |
+| #      | Constraint                                                                                                                                                                                              | Consequence for testing                                                                                                                                                                                                      |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **C1** | **Shared public environment.** Anyone in the world mutates the same catalogue, review list and account table concurrently.                                                                              | No test may assert on global counts, on "the newest review", or on a fixed product id existing forever. Assert on _self-created_ data.                                                                                       |
+| **C2** | **No data reset.** Every account created stays until deleted.                                                                                                                                           | Every test that creates an account MUST delete it in teardown, via API 12 (`DELETE /api/deleteAccount`) rather than the UI, so cleanup survives a mid-test failure.                                                          |
+| **C3** | **Ad interstitials.** Google vignette and a CMP consent dialog intercept clicks unpredictably.                                                                                                          | Header navigation is unreliable; direct `goto` to a known path is the sanctioned workaround. Overlay resolution must be centralised, never per-test.                                                                         |
 | **C4** | **HTTP status is not the API contract.** Most `/api/*` endpoints return HTTP `200` and carry the real status in `responseCode`. Some deployments return `responseCode: 3` where the docs promise `400`. | API assertions must be made on the **body**. Any divergence from `/api_list` is a defect of the site and is recorded in [§10 Known defects](#10-known-defects-of-the-system-under-test), never hidden by loosening a schema. |
-| **C5** | **No email verification.** Registration completes without confirming the address. | Any address in a domain we control is usable; no mailbox polling is required. |
-| **C6** | **Payment is not real.** Any 16-digit number and any future expiry is accepted. | Card data is synthetic; no negative payment-validation requirement is claimed beyond what the site actually enforces. |
+| **C5** | **No email verification.** Registration completes without confirming the address.                                                                                                                       | Any address in a domain we control is usable; no mailbox polling is required.                                                                                                                                                |
+| **C6** | **Payment is not real.** Any 16-digit number and any future expiry is accepted.                                                                                                                         | Card data is synthetic; no negative payment-validation requirement is claimed beyond what the site actually enforces.                                                                                                        |
 
 ---
 
@@ -112,24 +123,28 @@ Given/When/Then form; the capability specs in `openspec/specs/` restate these as
 ### 6.1 Account registration — `ACC`
 
 #### REQ-ACC-01 — Intake form starts registration
+
 **GIVEN** a guest on `/login`
 **WHEN** they submit a name and an email address not already registered
 **THEN** the account information form is displayed with heading `ENTER ACCOUNT INFORMATION`
 **AND** the submitted name and email are pre-filled and the email is read-only.
 
 #### REQ-ACC-02 — Duplicate email is rejected at intake
+
 **GIVEN** a guest on `/login`
 **WHEN** they submit the intake form with an email that already has an account
 **THEN** registration does not proceed
 **AND** the error `Email Address already exist!` is displayed on the same page.
 
 #### REQ-ACC-03 — Malformed email is rejected before submission
+
 **GIVEN** a guest on `/login`
 **WHEN** they enter a value that is not a valid email address and submit the intake form
 **THEN** the browser's native constraint validation blocks submission
 **AND** the page does not navigate.
 
 #### REQ-ACC-04 — Full registration creates an account
+
 **GIVEN** a guest who has passed intake
 **WHEN** they complete the account information form — title, password, date of birth, first
 name, last name, company, address, address 2, country, state, city, zipcode, mobile number —
@@ -137,18 +152,21 @@ and submit
 **THEN** the page `ACCOUNT CREATED!` is displayed with a `Continue` control.
 
 #### REQ-ACC-05 — Continue establishes an authenticated session
+
 **GIVEN** the `ACCOUNT CREATED!` page
 **WHEN** the user activates `Continue`
 **THEN** they are returned to the storefront
 **AND** the header shows `Logged in as <name>` with the name submitted at intake.
 
 #### REQ-ACC-06 — Optional opt-ins are honoured
+
 **GIVEN** the account information form
 **WHEN** the user selects `Sign up for our newsletter!` and/or `Receive special offers from our partners!`
 **THEN** submission succeeds with those preferences recorded
 **AND** neither checkbox is required to complete registration.
 
 #### REQ-ACC-07 — Account deletion
+
 **GIVEN** an authenticated user
 **WHEN** they activate `Delete Account`
 **THEN** `ACCOUNT DELETED!` is displayed with a `Continue` control
@@ -162,17 +180,20 @@ and submit
 ### 6.2 Authentication — `AUT`
 
 #### REQ-AUT-01 — Login page is reachable and labelled
+
 **GIVEN** a guest
 **WHEN** they open `Signup / Login`
 **THEN** the section `Login to your account` and the section `New User Signup!` are both visible.
 
 #### REQ-AUT-02 — Valid credentials authenticate
+
 **GIVEN** a registered account
 **WHEN** its email and password are submitted to the login form
 **THEN** the user is returned to the storefront
 **AND** the header shows `Logged in as <name>`.
 
 #### REQ-AUT-03 — Invalid credentials are rejected
+
 **GIVEN** the login form
 **WHEN** an unknown email, or a known email with the wrong password, is submitted
 **THEN** no session is created
@@ -181,6 +202,7 @@ and submit
 not disclose which of the two was wrong.
 
 #### REQ-AUT-04 — Logout terminates the session
+
 **GIVEN** an authenticated user
 **WHEN** they activate `Logout`
 **THEN** they are navigated to the login page
@@ -196,6 +218,7 @@ not disclose which of the two was wrong.
 ### 6.3 Product catalogue — `CAT`
 
 #### REQ-CAT-01 — All Products page lists the catalogue
+
 **GIVEN** any visitor
 **WHEN** they open `Products`
 **THEN** the page heading `ALL PRODUCTS` is visible
@@ -203,12 +226,14 @@ not disclose which of the two was wrong.
 **AND** each card exposes a name, a price and a `View Product` affordance.
 
 #### REQ-CAT-02 — Product detail exposes the full descriptor
+
 **GIVEN** the All Products page
 **WHEN** the visitor opens a product's `View Product`
 **THEN** the product detail page displays, at minimum: product name, category, price,
 availability, condition and brand.
 
 #### REQ-CAT-03 — Category navigation
+
 **GIVEN** the home page
 **THEN** a category sidebar is visible with top-level groups (`WOMEN`, `MEN`, `KIDS`)
 **WHEN** a visitor expands a group and selects a sub-category
@@ -217,6 +242,7 @@ availability, condition and brand.
 **AND** every listed product belongs to that category.
 
 #### REQ-CAT-04 — Brand navigation
+
 **GIVEN** the All Products page
 **THEN** a brands sidebar is visible
 **WHEN** a visitor selects a brand
@@ -225,6 +251,7 @@ availability, condition and brand.
 **AND** selecting a different brand from the sidebar navigates to that brand's listing.
 
 #### REQ-CAT-05 — Recommended items
+
 **GIVEN** the home page scrolled to the bottom
 **THEN** the section `RECOMMENDED ITEMS` is visible with at least one product
 **AND** each recommended product offers `Add to cart`.
@@ -236,6 +263,7 @@ availability, condition and brand.
 ### 6.4 Product search — `SRH`
 
 #### REQ-SRH-01 — Matching search returns results
+
 **GIVEN** the All Products page
 **WHEN** a visitor searches for a term present in the catalogue
 **THEN** the heading `SEARCHED PRODUCTS` is displayed
@@ -243,6 +271,7 @@ availability, condition and brand.
 **AND** every listed product's name contains the search term, case-insensitively.
 
 #### REQ-SRH-02 — Non-matching search returns an empty result set
+
 **GIVEN** the All Products page
 **WHEN** a visitor searches for a term present in no product name
 **THEN** the heading `SEARCHED PRODUCTS` is displayed
@@ -250,6 +279,7 @@ availability, condition and brand.
 **AND** no error page is shown.
 
 #### REQ-SRH-03 — Search results are actionable
+
 **GIVEN** a non-empty search result set
 **THEN** each result offers `Add to cart` and `View Product` identically to the All Products page.
 
@@ -260,36 +290,42 @@ availability, condition and brand.
 ### 6.5 Shopping cart — `CRT`
 
 #### REQ-CRT-01 — Add a product to the cart
+
 **GIVEN** any product listing or product detail page
 **WHEN** a visitor adds a product to the cart
 **THEN** a modal offers `Continue Shopping` and `View Cart`
 **AND** the cart contains a line item for that product.
 
 #### REQ-CRT-02 — Cart line items are accurate
+
 **GIVEN** a cart with one or more products
 **WHEN** the cart page is opened
 **THEN** each line item shows the product name, its unit price, its quantity and a total
 **AND** each line item's total equals unit price × quantity.
 
 #### REQ-CRT-03 — Multiple distinct products coexist
+
 **GIVEN** an empty cart
 **WHEN** two different products are added in sequence
 **THEN** the cart contains exactly two line items, one per product, each with its own price
 and quantity.
 
 #### REQ-CRT-04 — Quantity chosen on the detail page is respected
+
 **GIVEN** a product detail page
-**WHEN** the visitor sets the quantity to *n* (*n* > 1) and adds to the cart
-**THEN** the cart line item for that product shows quantity exactly *n*
-**AND** its total equals unit price × *n*.
+**WHEN** the visitor sets the quantity to _n_ (_n_ > 1) and adds to the cart
+**THEN** the cart line item for that product shows quantity exactly _n_
+**AND** its total equals unit price × _n_.
 
 #### REQ-CRT-05 — Remove a product from the cart
+
 **GIVEN** a cart containing a product
 **WHEN** the visitor activates the removal control on that line item
 **THEN** the line item is removed
 **AND** the remaining line items are unchanged.
 
 #### REQ-CRT-06 — Cart survives login
+
 **GIVEN** a guest with products in the cart
 **WHEN** they log in to an existing account
 **THEN** the same products are still present in the cart with the same quantities.
@@ -301,16 +337,19 @@ and quantity.
 ### 6.6 Checkout and orders — `CHK`
 
 #### REQ-CHK-01 — Checkout requires authentication
+
 **GIVEN** a guest with a non-empty cart
 **WHEN** they proceed to checkout
 **THEN** they are prompted to register or log in before the order can continue.
 
 #### REQ-CHK-02 — Checkout shows address details and order review
+
 **GIVEN** an authenticated user with a non-empty cart proceeding to checkout
 **THEN** the checkout page displays a delivery address block, a billing address block and a
 `Review Your Order` block listing every cart line item with its total.
 
 #### REQ-CHK-03 — Addresses mirror registration data
+
 **GIVEN** a user who registered with a given address
 **WHEN** they reach the checkout page
 **THEN** the delivery address and the billing address both reproduce, field for field, the
@@ -318,11 +357,13 @@ address submitted during registration — including title-prefixed name, company
 address 2, city, state, zipcode, country and mobile number.
 
 #### REQ-CHK-04 — Order comment is accepted
+
 **GIVEN** the checkout page
 **WHEN** the user enters a comment and places the order
 **THEN** the order proceeds to payment without error.
 
 #### REQ-CHK-05 — Payment completes the order
+
 **GIVEN** the payment page
 **WHEN** the user submits name on card, card number, CVC and expiry month/year and confirms
 **THEN** the order is placed
@@ -330,12 +371,14 @@ address 2, city, state, zipcode, country and mobile number.
 `Congratulations! Your order has been confirmed!`.
 
 #### REQ-CHK-06 — Invoice is downloadable
+
 **GIVEN** a confirmed order
 **WHEN** the user activates `Download Invoice`
 **THEN** a file download is initiated
 **AND** the downloaded file is non-empty.
 
 #### REQ-CHK-07 — Registering during checkout resumes the order
+
 **GIVEN** a guest who reached the login prompt from checkout with a non-empty cart
 **WHEN** they complete registration from there
 **THEN** their cart is intact
@@ -348,15 +391,18 @@ address 2, city, state, zipcode, country and mobile number.
 ### 6.7 Product reviews — `REV`
 
 #### REQ-REV-01 — Review form is present on product detail
+
 **GIVEN** a product detail page
 **THEN** a `Write Your Review` section is visible with name, email and review inputs and a submit control.
 
 #### REQ-REV-02 — Review submission is acknowledged
+
 **GIVEN** the review form
 **WHEN** a visitor submits a name, an email and review text
 **THEN** the success message `Thank you for your review.` is displayed.
 
 #### REQ-REV-03 — Review does not require authentication
+
 **GIVEN** a guest
 **THEN** REQ-REV-02 holds without a session.
 
@@ -369,16 +415,19 @@ address 2, city, state, zipcode, country and mobile number.
 ### 6.8 Newsletter subscription — `SUB`
 
 #### REQ-SUB-01 — Subscription block is present in the footer
+
 **GIVEN** any page with the site footer — home page and cart page at minimum
 **WHEN** the visitor scrolls to the footer
 **THEN** the `SUBSCRIPTION` heading, an email input and a submit control are visible.
 
 #### REQ-SUB-02 — Valid address is accepted
+
 **GIVEN** the footer subscription block
 **WHEN** a syntactically valid email address is submitted
 **THEN** the message `You have been successfully subscribed!` is displayed.
 
 #### REQ-SUB-03 — Invalid address is rejected before submission
+
 **GIVEN** the footer subscription block
 **WHEN** a value that is not a valid email address is submitted
 **THEN** native constraint validation blocks submission
@@ -391,17 +440,20 @@ address 2, city, state, zipcode, country and mobile number.
 ### 6.9 Contact form — `CTC`
 
 #### REQ-CTC-01 — Contact page is reachable
+
 **GIVEN** any page
 **WHEN** the visitor activates `Contact us`
 **THEN** the contact page is displayed with the heading `GET IN TOUCH`.
 
 #### REQ-CTC-02 — Submission with an attachment succeeds
+
 **GIVEN** the contact form
 **WHEN** the visitor supplies name, email, subject, message and a file, submits, and accepts
 the browser confirmation dialog
 **THEN** the message `Success! Your details have been submitted successfully.` is displayed.
 
 #### REQ-CTC-03 — Return to home
+
 **GIVEN** the contact success state
 **WHEN** the visitor activates `Home`
 **THEN** the home page is displayed.
@@ -413,21 +465,25 @@ the browser confirmation dialog
 ### 6.10 Site navigation and page behaviour — `NAV`
 
 #### REQ-NAV-01 — Home page identity
+
 **GIVEN** a visitor navigating to the site root
 **THEN** the home page loads with the site header, the category sidebar and the slider text
 `Full-Fledged practice website for Automation Engineers`.
 
 #### REQ-NAV-02 — Test Cases page is reachable
+
 **GIVEN** any page
 **WHEN** the visitor activates `Test Cases`
 **THEN** the URL is `/test_cases` and the test case list is displayed.
 
 #### REQ-NAV-03 — Scroll-to-top control
+
 **GIVEN** the home page scrolled to the footer, with `SUBSCRIPTION` visible
 **WHEN** the visitor activates the scroll-up arrow control
 **THEN** the page returns to the top and `Full-Fledged practice website for Automation Engineers` is visible.
 
 #### REQ-NAV-04 — Manual scroll to top
+
 **GIVEN** the same starting state as REQ-NAV-03
 **WHEN** the visitor scrolls to the top without the arrow control
 **THEN** the same end state as REQ-NAV-03 holds.
@@ -441,54 +497,68 @@ the browser confirmation dialog
 The `responseCode` values below are the **body** field, per constraint C4.
 
 #### REQ-API-01 — Products list
+
 `GET /api/productsList` returns `responseCode: 200` and a `products` array. Each product
 carries `id`, `name`, `price`, `brand` and a `category` object with `usertype.usertype` and
 `category`.
 
 #### REQ-API-02 — Products list rejects POST
+
 `POST /api/productsList` returns `responseCode: 405` and `This request method is not supported.`
 
 #### REQ-API-03 — Brands list
+
 `GET /api/brandsList` returns `responseCode: 200` and a `brands` array of `{ id, brand }`.
 
 #### REQ-API-04 — Brands list rejects PUT
+
 `PUT /api/brandsList` returns `responseCode: 405` and `This request method is not supported.`
 
 #### REQ-API-05 — Search product
+
 `POST /api/searchProduct` with form field `search_product` returns `responseCode: 200` and a
 `products` array whose entries match the term.
 
 #### REQ-API-06 — Search product without the parameter
+
 `POST /api/searchProduct` with no `search_product` field returns `responseCode: 400` and a
 message naming the missing `search_product` parameter.
 
 #### REQ-API-07 — Verify login, valid
+
 `POST /api/verifyLogin` with a registered `email` + `password` returns `responseCode: 200` and `User exists!`
 
 #### REQ-API-08 — Verify login, missing parameter
+
 `POST /api/verifyLogin` without `email` returns `responseCode: 400` and a message naming the
 missing email or password parameter.
 
 #### REQ-API-09 — Verify login rejects DELETE
+
 `DELETE /api/verifyLogin` returns `responseCode: 405` and `This request method is not supported.`
 
 #### REQ-API-10 — Verify login, unknown user
+
 `POST /api/verifyLogin` with credentials that match no account returns `responseCode: 404` and `User not found!`
 
 #### REQ-API-11 — Create account
+
 `POST /api/createAccount` with the full parameter set — `name, email, password, title,
 birth_date, birth_month, birth_year, firstname, lastname, company, address1, address2,
 country, zipcode, state, city, mobile_number` — returns `responseCode: 201` and `User created!`
 **AND** the created account then satisfies REQ-API-07 and can log in through the UI.
 
 #### REQ-API-12 — Delete account
+
 `DELETE /api/deleteAccount` with `email` + `password` returns `responseCode: 200` and
 `Account deleted!` **AND** the account subsequently satisfies REQ-API-10.
 
 #### REQ-API-13 — Update account
+
 `PUT /api/updateAccount` with the REQ-API-11 parameter set returns `responseCode: 200` and `User updated!`
 
 #### REQ-API-14 — Get user detail by email
+
 `GET /api/getUserDetailByEmail?email=<registered>` returns `responseCode: 200`, `User Detail`
 and a `user` object reproducing the registration data.
 
@@ -497,22 +567,121 @@ and a `user` object reproducing the registration data.
 
 ---
 
+### 6.12 Security baseline — `SEC`
+
+The vendor publishes no security contract, so these requirements are not transcribed from
+`/test_cases` or `/api_list`. They are derived from the **OWASP Top 10 (2021)** and the
+**OWASP API Security Top 10 (2023)**, restricted to what a black-box functional test can
+observe. Each one names the category it maps to. Categories that are not observable from
+outside — cryptographic strength (A02 internals), vulnerable components (A06), logging and
+monitoring (A09), supply-chain integrity (A08) and volumetric rate limiting (A04/API4) —
+are **not** claimed here; §2.2 records them as out of scope with the tooling that owns them.
+
+Two categories are **not applicable** to this site rather than uncovered: SSRF (A10/API7),
+because no published endpoint accepts a URL or host; and broken function-level
+authorisation (API5), because the site publishes no roles and therefore no privileged
+function.
+
+#### REQ-SEC-01 — HTTPS is enforced
+
+A request to the `http://` origin returns `301` to the equivalent `https://` URL. _(A02, A05)_
+
+#### REQ-SEC-02 — Baseline protective headers
+
+Every HTML and `/api/*` response carries `x-frame-options: DENY`,
+`x-content-type-options: nosniff` and a `referrer-policy`. _(A05)_
+
+#### REQ-SEC-03 — Content-security and transport-security policy
+
+Every HTML response carries `content-security-policy` and `strict-transport-security`.
+_(A05, A02)_ — **violated, defect D4.**
+
+#### REQ-SEC-04 — No technology disclosure
+
+No response identifies the application server or framework version (`x-powered-by`).
+_(A05)_ — **violated, defect D5.**
+
+#### REQ-SEC-05 — Session cookie is HttpOnly and same-site
+
+The session cookie is `HttpOnly` and declares a `SameSite` policy other than `None`.
+_(A07, A01)_
+
+#### REQ-SEC-06 — Cookies are restricted to secure transport
+
+Every cookie the site sets carries `Secure`. _(A02)_ — **violated, defect D6.**
+
+#### REQ-SEC-07 — Logout invalidates the session server-side
+
+A session identifier captured before logout does not authenticate a request after it.
+_(A07)_
+
+#### REQ-SEC-08 — No cross-origin access is granted
+
+The API returns no `access-control-allow-origin` for an arbitrary requesting origin.
+_(A05, API8)_
+
+#### REQ-SEC-09 — Injection payloads are handled as data
+
+A search term containing script markup, SQL metacharacters or a `UNION SELECT` clause
+returns `responseCode: 200` with an empty `products` array, and no database error or stack
+trace. _(A03, API8)_
+
+#### REQ-SEC-10 — Search terms are rendered inert
+
+A search term containing script markup is rendered as text; no script executes and no
+dialog is raised. _(A03)_
+
+#### REQ-SEC-11 — No endpoint returns credentials
+
+No API response contains a password, hash or token field for any account. Enforced
+structurally by a strict response schema. _(API3, A02)_
+
+#### REQ-SEC-12 — Personal data requires authorisation
+
+An unauthenticated caller knowing only an email address does not receive that account's
+name, date of birth, employer or postal address. _(A01, API1)_ — **violated, defect D7.**
+
+#### REQ-SEC-13 — The API does not disclose account existence
+
+Registered and unregistered emails produce indistinguishable responses from
+`GET /api/getUserDetailByEmail`. _(A07, API1)_ — **violated, defect D8.**
+
+#### REQ-SEC-14 — Checkout and payment require a session
+
+A caller with no session is not served the checkout address block or the card-entry form.
+_(A01, A04)_ — **violated, defect D9.**
+
+#### REQ-SEC-15 — Account deletion requires a session and is not a GET
+
+A caller with no session is not served the `Account Deleted!` confirmation, and deletion is
+not triggerable by a `GET` navigation. _(A01, A04)_ — **violated, defect D10.**
+
+> Traces: OWASP Top 10 (2021) A01, A02, A03, A05, A07; OWASP API Security Top 10 (2023)
+> API1, API3, API8. REQ-AUT-03 (anti-enumeration at the login form) is the one security
+> control that predates this section and stays where it is, in `authentication`.
+
+---
+
 ## 7. Cross-cutting requirements
 
 #### REQ-X-01 — Deterministic session state
+
 Every scenario declares whether it begins as a guest or as an authenticated user, and
 establishes that state itself. No scenario may depend on state left behind by another.
 
 #### REQ-X-02 — Self-cleanup
+
 Every scenario that creates an account, or mutates any server-side state that persists,
 reverses that mutation before it ends, using API 12 for accounts. Cleanup runs even when the
 scenario's assertions fail.
 
 #### REQ-X-03 — Unique identities
+
 Every registration uses a per-run unique email so that concurrent runs and CI reruns cannot
 collide (constraint C1).
 
 #### REQ-X-04 — Overlay tolerance
+
 Interstitial ads and consent dialogs are neutralised centrally, once, for all scenarios
 (constraint C3). No scenario contains its own ad-dismissal logic.
 
@@ -520,46 +689,46 @@ Interstitial ads and consent dialogs are neutralised centrally, once, for all sc
 
 ## 8. Traceability — vendor test case → requirement
 
-| TC | Title | Requirements |
-|----|-------|--------------|
-| 1 | Register User | REQ-ACC-01, 04, 05, 06, 07 |
-| 2 | Login with correct email and password | REQ-AUT-01, 02; REQ-ACC-07 |
-| 3 | Login with incorrect email and password | REQ-AUT-01, 03 |
-| 4 | Logout User | REQ-AUT-02, 04 |
-| 5 | Register with existing email | REQ-ACC-02 |
-| 6 | Contact Us Form | REQ-CTC-01, 02, 03 |
-| 7 | Verify Test Cases page | REQ-NAV-02 |
-| 8 | All Products and product detail page | REQ-CAT-01, 02 |
-| 9 | Search Product | REQ-SRH-01 |
-| 10 | Subscription on home page | REQ-SUB-01, 02 |
-| 11 | Subscription on cart page | REQ-SUB-01, 02 |
-| 12 | Add Products in Cart | REQ-CRT-01, 02, 03 |
-| 13 | Verify Product quantity in Cart | REQ-CRT-04 |
-| 14 | Place Order: Register while Checkout | REQ-CHK-01, 07, 02, 04, 05; REQ-ACC-04, 05, 07 |
-| 15 | Place Order: Register before Checkout | REQ-ACC-04, 05; REQ-CHK-02, 04, 05; REQ-ACC-07 |
-| 16 | Place Order: Login before Checkout | REQ-AUT-02; REQ-CHK-02, 04, 05 |
-| 17 | Remove Products From Cart | REQ-CRT-05 |
-| 18 | View Category Products | REQ-CAT-03 |
-| 19 | View & Cart Brand Products | REQ-CAT-04 |
-| 20 | Search Products and Verify Cart After Login | REQ-SRH-01, 03; REQ-CRT-06 |
-| 21 | Add review on product | REQ-REV-01, 02, 03 |
-| 22 | Add to cart from Recommended items | REQ-CAT-05; REQ-CRT-01 |
-| 23 | Verify address details in checkout page | REQ-CHK-03 |
-| 24 | Download Invoice after purchase order | REQ-CHK-05, 06 |
-| 25 | Scroll Up using Arrow button | REQ-NAV-01, 03 |
-| 26 | Scroll Up without Arrow button | REQ-NAV-01, 04 |
+| TC  | Title                                       | Requirements                                   |
+| --- | ------------------------------------------- | ---------------------------------------------- |
+| 1   | Register User                               | REQ-ACC-01, 04, 05, 06, 07                     |
+| 2   | Login with correct email and password       | REQ-AUT-01, 02; REQ-ACC-07                     |
+| 3   | Login with incorrect email and password     | REQ-AUT-01, 03                                 |
+| 4   | Logout User                                 | REQ-AUT-02, 04                                 |
+| 5   | Register with existing email                | REQ-ACC-02                                     |
+| 6   | Contact Us Form                             | REQ-CTC-01, 02, 03                             |
+| 7   | Verify Test Cases page                      | REQ-NAV-02                                     |
+| 8   | All Products and product detail page        | REQ-CAT-01, 02                                 |
+| 9   | Search Product                              | REQ-SRH-01                                     |
+| 10  | Subscription on home page                   | REQ-SUB-01, 02                                 |
+| 11  | Subscription on cart page                   | REQ-SUB-01, 02                                 |
+| 12  | Add Products in Cart                        | REQ-CRT-01, 02, 03                             |
+| 13  | Verify Product quantity in Cart             | REQ-CRT-04                                     |
+| 14  | Place Order: Register while Checkout        | REQ-CHK-01, 07, 02, 04, 05; REQ-ACC-04, 05, 07 |
+| 15  | Place Order: Register before Checkout       | REQ-ACC-04, 05; REQ-CHK-02, 04, 05; REQ-ACC-07 |
+| 16  | Place Order: Login before Checkout          | REQ-AUT-02; REQ-CHK-02, 04, 05                 |
+| 17  | Remove Products From Cart                   | REQ-CRT-05                                     |
+| 18  | View Category Products                      | REQ-CAT-03                                     |
+| 19  | View & Cart Brand Products                  | REQ-CAT-04                                     |
+| 20  | Search Products and Verify Cart After Login | REQ-SRH-01, 03; REQ-CRT-06                     |
+| 21  | Add review on product                       | REQ-REV-01, 02, 03                             |
+| 22  | Add to cart from Recommended items          | REQ-CAT-05; REQ-CRT-01                         |
+| 23  | Verify address details in checkout page     | REQ-CHK-03                                     |
+| 24  | Download Invoice after purchase order       | REQ-CHK-05, 06                                 |
+| 25  | Scroll Up using Arrow button                | REQ-NAV-01, 03                                 |
+| 26  | Scroll Up without Arrow button              | REQ-NAV-01, 04                                 |
 
 **Requirements with no vendor test case** — added by us because the vendor catalogue is
 positive-path-heavy. These are deliberate additions, not transcription:
 
-| Requirement | Rationale |
-|-------------|-----------|
-| REQ-ACC-03 | Malformed email at intake; the catalogue has no negative registration case. |
-| REQ-AUT-03 (non-disclosure clause) | Anti-enumeration control. |
-| REQ-SRH-02 | Empty result set; the catalogue only covers matching searches. |
-| REQ-SUB-03 | Invalid subscription address. |
-| REQ-API-02, 03, 04, 07, 08, 09, 10, 13, 14 | Published in `/api_list` but absent from the UI test catalogue. |
-| REQ-X-01 … REQ-X-04 | Test-integrity requirements imposed by constraints C1–C3. |
+| Requirement                                | Rationale                                                                   |
+| ------------------------------------------ | --------------------------------------------------------------------------- |
+| REQ-ACC-03                                 | Malformed email at intake; the catalogue has no negative registration case. |
+| REQ-AUT-03 (non-disclosure clause)         | Anti-enumeration control.                                                   |
+| REQ-SRH-02                                 | Empty result set; the catalogue only covers matching searches.              |
+| REQ-SUB-03                                 | Invalid subscription address.                                               |
+| REQ-API-02, 03, 04, 07, 08, 09, 10, 13, 14 | Published in `/api_list` but absent from the UI test catalogue.             |
+| REQ-X-01 … REQ-X-04                        | Test-integrity requirements imposed by constraints C1–C3.                   |
 
 ---
 
@@ -575,11 +744,11 @@ positive-path-heavy. These are deliberate additions, not transcription:
 
 ### 9.2 Open questions
 
-| # | Question | Impact if wrong |
-|---|----------|-----------------|
-| Q1 | Is `responseCode: 3` on some hosts an intended value or a regression? `/api_list` documents `400`. | REQ-API-06 / REQ-API-08 assertions. Tracked in §10. |
-| Q2 | Is cart persistence (REQ-CRT-06) session-scoped or account-scoped? TC 20 only proves it survives a login within one session. | Scope of REQ-CRT-06; we assert only the TC-20 case. |
-| Q3 | Does the site enforce any password policy at registration? None is documented. | No password-policy requirement is claimed. |
+| #   | Question                                                                                                                     | Impact if wrong                                     |
+| --- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Q1  | Is `responseCode: 3` on some hosts an intended value or a regression? `/api_list` documents `400`.                           | REQ-API-06 / REQ-API-08 assertions. Tracked in §10. |
+| Q2  | Is cart persistence (REQ-CRT-06) session-scoped or account-scoped? TC 20 only proves it survives a login within one session. | Scope of REQ-CRT-06; we assert only the TC-20 case. |
+| Q3  | Does the site enforce any password policy at registration? None is documented.                                               | No password-policy requirement is claimed.          |
 
 ### 9.3 Deferred
 
@@ -597,14 +766,37 @@ rather than inferring one.
 
 ## 10. Known defects of the system under test
 
-Recorded here so that a test asserting the documented contract may fail *by design* rather
+Recorded here so that a test asserting the documented contract may fail _by design_ rather
 than being weakened to match the bug.
 
-| # | Observed | Documented behaviour | Handling |
-|---|----------|---------------------|----------|
-| **D1** | `POST /api/searchProduct` without `search_product` returns `responseCode: 3` on some deployments. | `/api_list` API 6 promises `400`. | Assert the message names the missing parameter; record the code divergence. Do not loosen the schema. |
-| **D2** | Header link clicks (`Signup / Login`, `Cart`) are intermittently intercepted by Google vignette interstitials. | Header navigation should work. | Mitigated by direct navigation (C3); the interception itself is a site defect, not ours. |
-| **D3** | `/api/createAccount` returns HTTP `200` while the body carries `201`. | Not stated; `/api_list` lists response code `201` without distinguishing HTTP from body. | Assert the body. Covered by C4. |
+| #      | Observed                                                                                                       | Documented behaviour                                                                     | Handling                                                                                              |
+| ------ | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **D1** | `POST /api/searchProduct` without `search_product` returns `responseCode: 3` on some deployments.              | `/api_list` API 6 promises `400`.                                                        | Assert the message names the missing parameter; record the code divergence. Do not loosen the schema. |
+| **D2** | Header link clicks (`Signup / Login`, `Cart`) are intermittently intercepted by Google vignette interstitials. | Header navigation should work.                                                           | Mitigated by direct navigation (C3); the interception itself is a site defect, not ours.              |
+| **D3** | `/api/createAccount` returns HTTP `200` while the body carries `201`.                                          | Not stated; `/api_list` lists response code `201` without distinguishing HTTP from body. | Assert the body. Covered by C4.                                                                       |
+
+### Security findings (D4 … D10)
+
+Found by the `add-security-baseline-coverage` change on **2026-08-08**, each by a test that
+was written to assert the requirement and observed failing. The failing run **is** the
+evidence. Each case is commented out in place with `// TODO: FIXME: D<n>` — never
+`test.skip()` — so the coverage loss is visible in the file, and uncommenting one block is
+the whole of the work when the site is fixed.
+
+| #       | Observed                                                                                                                                                                                                                                                                               | Requirement violated | OWASP         | Handling                                                                                                                                                                                                                                                                                                                                                               |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **D4**  | No `content-security-policy` and no `strict-transport-security` on any response. Observed header list: `date, content-type, transfer-encoding, connection, vary, referrer-policy, x-frame-options, x-content-type-options, x-powered-by, set-cookie, …`                                | REQ-SEC-03           | A05, A02      | TC-17 commented out with `// TODO: FIXME: D4`. Without CSP a single injected script runs with full origin privileges; without HSTS the REQ-SEC-01 redirect is bypassable on a session's first request                                                                                                                                                                  |
+| **D5**  | Every response carries `x-powered-by: Phusion Passenger(R) 6.1.2` — framework **and** version.                                                                                                                                                                                         | REQ-SEC-04           | A05           | TC-18 commented out with `// TODO: FIXME: D5`. A version string tells an attacker which published CVEs to try first                                                                                                                                                                                                                                                    |
+| **D6**  | Neither `sessionid` nor `csrftoken` carries `Secure`. Both are `SameSite=Lax`; `sessionid` is `HttpOnly`.                                                                                                                                                                              | REQ-SEC-06           | A02           | TC-20 commented out with `// TODO: FIXME: D6`. The cookie is attached to a plain-HTTP request _before_ the HTTPS redirect fires                                                                                                                                                                                                                                        |
+| **D7**  | `GET /api/getUserDetailByEmail?email=<registered>` returns `responseCode: 200` with the account's name, title, day/month/year of birth, first and last name, employer, address, city, state, country and postcode — to a caller presenting **no credential**. No password is returned. | REQ-SEC-12           | **A01, API1** | TC-26 commented out with `// TODO: FIXME: D7`. Highest severity of the seven: knowing an email address is the entire access-control check                                                                                                                                                                                                                              |
+| **D8**  | The same endpoint answers `200` for a registered email and `404 Account not found with this email, try another email!` for an unregistered one.                                                                                                                                        | REQ-SEC-13           | A07, API1     | TC-27 commented out with `// TODO: FIXME: D8`. This defeats the anti-enumeration control REQ-AUT-03 imposes on the login form, which TC-07 proves is working there — the control and its bypass are both in the suite                                                                                                                                                  |
+| **D9**  | `GET /checkout` and `GET /payment` answer `200` to a caller with no session and no cart, rendering `Address Details`, `Place Order` and the `card_number` field.                                                                                                                       | REQ-SEC-14           | A01, A04      | TC-28 commented out with `// TODO: FIXME: D9`. REQ-CHK-02 assumes login precedes checkout; the site does not enforce it                                                                                                                                                                                                                                                |
+| **D10** | `GET /delete_account` answers `200` to a caller with no session and renders `Account Deleted!`.                                                                                                                                                                                        | REQ-SEC-15           | A01, A04      | TC-29 commented out with `// TODO: FIXME: D10`. The severity is the method, not the page: a state-changing `GET` can be triggered from any third-party page in a logged-in visitor's browser with their cookies attached, which `SameSite=Lax` does not prevent for a top-level navigation. **Deliberately not demonstrated** — proving it would delete a real account |
+
+> Scope note. D4 … D10 are findings against a **third-party practice site** that may have
+> been built deliberately permissive. Whether its owner acts on them is not a QA decision;
+> recording them is. Nothing here was found by attacking the site: every finding came from
+> a single read request, or from an account this suite created and deleted.
 
 ---
 

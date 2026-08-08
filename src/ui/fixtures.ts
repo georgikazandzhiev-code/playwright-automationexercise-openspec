@@ -6,6 +6,7 @@ import {
 } from '@utils/consent';
 import { buildSeededAccount, type SeededAccount } from '@api-data-providers/account-api.data';
 import { AccountApiService } from '../api/services/account-api.service';
+import { SecurityProbeService } from '../api/services/security-probe.service';
 import { AccountCreatedPage } from './pages/account-created.page';
 import { CartPage } from './pages/cart.page';
 import { CheckoutPage } from './pages/checkout.page';
@@ -19,6 +20,7 @@ import { SignupLoginPage } from './pages/signup-login.page';
 
 type PageFixtures = {
   accountApi: AccountApiService;
+  securityProbe: SecurityProbeService;
   seededAccount: SeededAccount;
   disposableAccount: SeededAccount;
   navigationPage: NavigationPage;
@@ -53,6 +55,14 @@ export const test = base.extend<PageFixtures>({
   },
   accountApi: async ({ request }, use) => {
     await use(new AccountApiService(request));
+  },
+  /**
+   * A request context that does NOT share the browser's cookie jar — which is exactly why
+   * REQ-SEC-07 uses it. Replaying a captured session identifier only proves something if
+   * the request would otherwise carry no session at all.
+   */
+  securityProbe: async ({ request }, use) => {
+    await use(new SecurityProbeService(request));
   },
   /**
    * An account that exists for the duration of one test, created through the REST API

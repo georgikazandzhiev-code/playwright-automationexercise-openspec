@@ -51,6 +51,46 @@ export const VerifyLoginResponseSchema = z.strictObject({
   message: z.string().min(1),
 });
 
+/**
+ * The `user` object returned by API 14 (`getUserDetailByEmail`).
+ *
+ * The strictness here is not stylistic — it IS the mechanism of REQ-SEC-11. The site
+ * currently returns no password, hash or token, and this schema is what makes a future
+ * deployment that starts returning one fail the suite instead of passing unnoticed.
+ * Adding a credential field to this object to "make the parse work" would delete the
+ * requirement.
+ */
+export const UserDetailSchema = z.strictObject({
+  id: z.number().int().positive(),
+  name: z.string().min(1),
+  email: z.string().email(),
+  title: z.string(),
+  birth_day: z.string(),
+  birth_month: z.string(),
+  birth_year: z.string(),
+  first_name: z.string(),
+  last_name: z.string(),
+  company: z.string(),
+  address1: z.string(),
+  address2: z.string(),
+  country: z.string(),
+  state: z.string(),
+  city: z.string(),
+  zipcode: z.string(),
+});
+
+export const UserDetailResponseSchema = z.strictObject({
+  responseCode: z.number(),
+  user: UserDetailSchema,
+});
+
+/**
+ * Either outcome of a user lookup — the detail body or the error envelope. Used by the
+ * cases that must compare a registered and an unregistered email without knowing in
+ * advance which shape each returns (REQ-SEC-13).
+ */
+export const UserLookupResponseSchema = z.union([UserDetailResponseSchema, ApiErrorResponseSchema]);
+
 export type ProductCategory = z.infer<typeof ProductCategorySchema>;
 export type CatalogProduct = z.infer<typeof CatalogProductSchema>;
 export type ProductsListResponse = z.infer<typeof ProductsListResponseSchema>;
@@ -58,3 +98,6 @@ export type SearchProductsResponse = z.infer<typeof SearchProductsResponseSchema
 export type ApiErrorResponse = z.infer<typeof ApiErrorResponseSchema>;
 export type ApiMessageResponse = z.infer<typeof ApiMessageResponseSchema>;
 export type VerifyLoginResponse = z.infer<typeof VerifyLoginResponseSchema>;
+export type UserDetail = z.infer<typeof UserDetailSchema>;
+export type UserDetailResponse = z.infer<typeof UserDetailResponseSchema>;
+export type UserLookupResponse = z.infer<typeof UserLookupResponseSchema>;

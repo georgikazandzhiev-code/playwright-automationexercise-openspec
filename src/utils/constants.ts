@@ -70,6 +70,69 @@ export const ORDER_CONFIRMATION_TEXT = 'Congratulations! Your order has been con
 export const ORDER_PLACED_HEADING = 'Order Placed!';
 export const DOWNLOAD_INVOICE_LABEL = 'Download Invoice';
 
+/* ─── Security baseline (REQ-SEC-*) ─── */
+
+/** Additional REST paths the security baseline exercises (API 3, API 14). */
+export const API_BRANDS_LIST_PATH = '/api/brandsList';
+export const API_USER_DETAIL_PATH = '/api/getUserDetailByEmail';
+
+/** Routes that must require a session (REQ-SEC-14, REQ-SEC-15). */
+export const UI_PATH_CHECKOUT = '/checkout';
+export const UI_PATH_PAYMENT = '/payment';
+export const UI_PATH_DELETE_ACCOUNT = '/delete_account';
+
+/** Plain-HTTP origin, used to prove the HTTPS redirect (REQ-SEC-01). */
+export const INSECURE_ORIGIN_URL = `http://${DEFAULT_BASE_HOST}/`;
+
+/** An origin the site has no relationship with, used to prove no CORS grant (REQ-SEC-08). */
+export const FOREIGN_ORIGIN_URL = 'https://foreign-origin.example';
+
+/** Response header names asserted by the security baseline. */
+export const HEADER_FRAME_OPTIONS = 'x-frame-options';
+export const HEADER_CONTENT_TYPE_OPTIONS = 'x-content-type-options';
+export const HEADER_REFERRER_POLICY = 'referrer-policy';
+export const HEADER_CONTENT_SECURITY_POLICY = 'content-security-policy';
+export const HEADER_STRICT_TRANSPORT_SECURITY = 'strict-transport-security';
+export const HEADER_POWERED_BY = 'x-powered-by';
+export const HEADER_ACCESS_CONTROL_ALLOW_ORIGIN = 'access-control-allow-origin';
+export const HEADER_LOCATION = 'location';
+
+/** Expected values for the headers above. */
+export const FRAME_OPTIONS_DENY = 'DENY';
+export const CONTENT_TYPE_OPTIONS_NOSNIFF = 'nosniff';
+
+/** Name of the cookie carrying the authenticated session (REQ-SEC-05 … REQ-SEC-07). */
+export const SESSION_COOKIE_NAME = 'sessionid';
+/** `SameSite` value that would defeat the cross-site protection REQ-SEC-05 requires. */
+export const SAME_SITE_NONE = 'None';
+
+/** HTTP status codes asserted outside the `responseCode` convention. */
+export const HTTP_STATUS_MOVED_PERMANENTLY = 301;
+
+/** API body `responseCode` for an unsupported method (API 2 / 4 / 9). */
+export const API_RESPONSE_CODE_METHOD_NOT_ALLOWED = 405;
+/** Site copy returned with that code — part of the published contract, so asserted verbatim. */
+export const API_METHOD_NOT_ALLOWED_MESSAGE = 'This request method is not supported.';
+/** Substrings expected in the API 8 error message (wording varies by host). */
+export const API_VERIFY_LOGIN_MISSING_PARAM_MARKERS = ['email or password', 'missing'] as const;
+
+/** Copy that must never be served to a caller with no session (REQ-SEC-14, REQ-SEC-15). */
+export const CHECKOUT_PLACE_ORDER_LABEL = 'Place Order';
+export const PAYMENT_CARD_NUMBER_FIELD = 'card_number';
+export const ACCOUNT_DELETED_HEADING = 'Account Deleted!';
+
+/**
+ * Text that would betray a leaked database error or stack trace in a response body
+ * (REQ-SEC-09). Lower-cased before comparison at the call site.
+ */
+export const ERROR_LEAK_MARKERS = [
+  'sql',
+  'syntax error',
+  'traceback',
+  'stack trace',
+  'exception',
+] as const;
+
 /** Default timeouts (ms). */
 export const DEFAULT_EXPECT_TIMEOUT_MS = 25_000;
 export const DEFAULT_ACTION_TIMEOUT_MS = 20_000;

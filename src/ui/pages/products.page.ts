@@ -61,6 +61,16 @@ export class ProductsPage extends BasePage {
   };
 
   /**
+   * Assert the search results view rendered at all (REQ-SEC-10).
+   *
+   * Needed by the payload case: "no results" is only meaningful if the page came back.
+   * A blank page would satisfy `assertNoSearchResultsRendered` while telling us nothing.
+   */
+  assertSearchResultsPageRendered = async (): Promise<void> => {
+    await expect(this.searchedProductsHeading).toBeVisible();
+  };
+
+  /**
    * Assert no product cards are rendered for the current search view.
    */
   assertNoSearchResultsRendered = async (): Promise<void> => {
